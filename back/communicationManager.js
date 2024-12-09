@@ -27,7 +27,9 @@ async function findUserByUsername(username) {
   return rows[0]; // Devuelve el primer resultado (puede ser undefined)
 }
 
-export default communicationManager = {
+const communicationManager = {
   registerUser,
   findUserByUsername,
 };
+
+export default communicationManager;
