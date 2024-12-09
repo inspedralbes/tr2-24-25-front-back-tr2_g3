@@ -12,3 +12,22 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+// Función para registrar un usuario
+async function registerUser(username, hashedPassword) {
+  const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+  const [result] = await pool.query(query, [username, hashedPassword]);
+  return result;
+}
+
+// Función para buscar un usuario por su username
+async function findUserByUsername(username) {
+  const query = 'SELECT * FROM users WHERE username = ?';
+  const [rows] = await pool.query(query, [username]);
+  return rows[0]; // Devuelve el primer resultado (puede ser undefined)
+}
+
+export default communicationManager = {
+  registerUser,
+  findUserByUsername,
+};

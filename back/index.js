@@ -3,6 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import communicationManager from './communicationManager.js';
 
 dotenv.config(); // Carga las variables de entorno desde .env
 
