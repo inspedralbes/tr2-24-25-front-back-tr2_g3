@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs'; // Encriptación de contraseñas
 import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
+import { MongoClient } from 'mongodb';
 
 dotenv.config(); // Carga las variables de entorno de .env
 
@@ -25,6 +26,40 @@ const io = new Server(server, {
 // Middleware
 app.use(cors()); // Habilita CORS
 app.use(express.json()); // Permite recibir y trabajar con JSON
+
+const mongoUri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster0`;
+
+const client = new MongoClient(mongoUri);
+
+async function getClientDB() {
+    try {
+        await client.connect();
+        console.log("Conexión exitosa a MongoDB Atlas");
+        return client;
+    } catch (error) {
+        console.error("Error al conectar:", error);
+    }
+}
+
+const connectDB = async () => {
+    try {
+        const client = await getClientDB();
+
+        // Usa la base de datos especificada
+        const database = client.db(process.env.MONGO_DB);
+        const collection = database.collection('statistics');
+
+        // Ejemplo: Insertar datos
+        const result = await collection.insertOne({ mensaje: "Conexión exitosa usando variables de entorno" });
+        console.log("Documento insertado con ID:", result.insertedId);
+    } catch (error) {
+        console.error("Error al conectar:", error);
+    } finally {
+        await client.close();
+    }
+};
+
+connectDB();
 
 // Rutas básicas
 app.get('/', (req, res) => {
