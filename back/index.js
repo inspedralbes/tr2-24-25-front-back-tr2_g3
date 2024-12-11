@@ -59,8 +59,6 @@ const connectDB = async () => {
     }
 };
 
-connectDB();
-
 // Rutas básicas
 app.get('/', (req, res) => {
     res.json({ message: 'Servidor funcionando correctamente' });
@@ -68,15 +66,15 @@ app.get('/', (req, res) => {
 
 // Login de usuarios
 app.post('/auth/login', async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: 'Se requieren usuario y contraseña' });
     }
 
     try {
         // Buscar el usuario en la base de datos a través del communicationManager
-        const user = await communicationManager.findUserByUsername(username);
+        const user = await communicationManager.findUserByMail(email);
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -89,10 +87,30 @@ app.post('/auth/login', async (req, res) => {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
-        // Generar el token JWT
-        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
+        const permission = communicationManager.getPermissionById(user.permission);
 
-        res.json({ message: 'Login exitoso', token });
+        let token;
+
+        // Generar el token JWT
+        switch (user.permission) {
+            case 1:
+                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_ADMIN, { expiresIn: '1h' });
+                console.log('Usuario admin');
+                break;
+            case 2:
+                console.log('Usuario profesor');
+                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_TEACHER, { expiresIn: '1h' });
+                break;
+            case 3:
+                console.log('Usuario alumno');
+                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_STUDENT, { expiresIn: '1h' });
+                break;
+            default:
+                console.log('Usuario sin permisos');
+                break;
+        }
+
+        res.json({ message: 'Login exitoso', token, permission });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al iniciar sesión' });
@@ -121,21 +139,30 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-function verifyToken(req, res, next) {
-    const token = req.headers['authorization']?.split(' ')[1]; // Leer el token del encabezado "Authorization"
+function verifyToken(secrets) {
+    return (req, res, next) => {
+        const token = req.headers['authorization']?.split(' ')[1]; // Leer el token del encabezado "Authorization"
 
-    if (!token) {
-        return res.status(401).json({ message: 'Token no proporcionado' });
-    }
+        if (!token) {
+            return res.status(401).json({ message: 'Token no proporcionado' });
+        }
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET); // Verificar el token
-        req.user = decoded; // Agregar los datos del usuario decodificado al objeto de solicitud
-        next(); // Pasar al siguiente middleware/controlador
-    } catch (error) {
-        return res.status(403).json({ message: 'Token inválido o expirado' });
-    }
+        for (const secret of secrets) {
+            try {
+                const decoded = jwt.verify(token, secret); // Intentar verificar el token
+                req.user = decoded; // Agregar los datos del usuario decodificado al objeto de solicitud
+                return next(); // Token válido
+            } catch (error) {
+                // Continuar intentando con otros secretos
+            }
+        }
+
+        return res.status(403).json({ message: 'Token inválido o expirado' }); // Ningún secreto válido
+    };
 }
+const verifyTokenAdmin = verifyToken([JWT_SECRET_ADMIN]);
+const verifyTokenTeacher = verifyToken([JWT_SECRET_ADMIN, JWT_SECRET_TEACHER]);
+const verifyTokenStudent = verifyToken([JWT_SECRET_ADMIN, JWT_SECRET_TEACHER, JWT_SECRET_STUDENT]);
 
 // Ruta protegida de ejemplo
 app.get('/protected', verifyToken, (req, res) => {
