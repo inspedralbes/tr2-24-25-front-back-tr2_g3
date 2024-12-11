@@ -1,5 +1,5 @@
 <template>
-  <v-container class="d-flex justify-center align-center" style="height: 100vh;">
+  <v-container class="d-flex justify-center align-center" style="height: 100vh; background-color: #f5f5f5;">
     <v-card class="pa-5" max-width="400" elevation="8" outlined>
       <v-card-title class="text-center text-h5 primary--text">Iniciar Sesión</v-card-title>
       <v-card-text>

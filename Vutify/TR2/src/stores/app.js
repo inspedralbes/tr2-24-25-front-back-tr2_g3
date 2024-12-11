@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { loginRequest, registerRequest } from '@/services/ServiceApi'; 
+import { login, register } from '@/services/authService'; 
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -13,7 +13,7 @@ export const useAppStore = defineStore('app', {
   actions: {
     async login(email, password) {
       try {
-        const data = await loginRequest(email, password);
+        const data = await login(email, password);
         this.token = data.token;
         this.user = { ...this.user, email };
         this.isAuthenticated = true;
@@ -26,7 +26,7 @@ export const useAppStore = defineStore('app', {
 
     async register(name, email, password) {
       try {
-        const data = await registerRequest(name, email, password); 
+        const data = await register(name, email, password); 
         console.log(data.message);
         return true;
       } catch (error) {

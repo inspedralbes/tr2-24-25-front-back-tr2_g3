@@ -1,17 +1,67 @@
 <template>
   <v-container class="d-flex justify-center align-center" style="height: 100vh; background-color: #f5f5f5;">
-    <v-card class="pa-5" max-width="500" elevation="8" outlined>
+    <v-card class="pa-5" max-width="400" elevation="8" outlined>
       <v-card-title class="text-center text-h5 primary--text">Crear Cuenta</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
-          <v-text-field v-model="name" label="Nombre Completo" :rules="[rules.required]" required outlined dense clearable class="mb-4" hide-details="auto"></v-text-field>
-          <v-text-field v-model="email" label="Correo Electrónico" :rules="[rules.required, rules.email]" required type="email" outlined dense clearable class="mb-4" hide-details="auto"></v-text-field>
-          <v-text-field v-model="password" label="Contraseña" :rules="[rules.required, rules.minLength(6)]" required type="password" outlined dense clearable class="mb-4" hide-details="auto"></v-text-field>
-          <v-text-field v-model="confirmPassword" label="Confirmar Contraseña" :rules="[rules.required, rules.matchPassword]" required type="password" outlined dense clearable class="mb-4" hide-details="auto"></v-text-field>
+          <v-text-field 
+            v-model="name" 
+            label="Nombre Completo" 
+            :rules="[rules.required]" 
+            required 
+            outlined 
+            dense 
+            clearable 
+            class="mb-4"
+          ></v-text-field>
+          <v-text-field 
+            v-model="email" 
+            label="Correo Electrónico" 
+            :rules="[rules.required, rules.email]" 
+            required 
+            type="email" 
+            outlined 
+            dense 
+            clearable 
+            class="mb-4"
+          ></v-text-field>
+          <v-text-field 
+            v-model="password" 
+            label="Contraseña" 
+            :rules="[rules.required, rules.minLength(6)]" 
+            required 
+            type="password" 
+            outlined 
+            dense 
+            clearable 
+            class="mb-4"
+          ></v-text-field>
+          <v-text-field 
+            v-model="confirmPassword" 
+            label="Confirmar Contraseña" 
+            :rules="[rules.required, rules.matchPassword]" 
+            required 
+            type="password" 
+            outlined 
+            dense 
+            clearable 
+            class="mb-4"
+          ></v-text-field>
 
           <v-alert v-if="errorMessage" type="error" class="mt-4" dismissible>{{ errorMessage }}</v-alert>
 
-          <v-btn block color="primary" class="mt-4 rounded-lg" @click="register" :disabled="!valid">Registrarse</v-btn>
+          <v-btn 
+            block 
+            color="primary" 
+            class="mt-4 rounded-lg" 
+            @click="register" 
+            :disabled="!valid"
+          >
+            Registrarse
+          </v-btn>
+          <v-btn block class="mt-3" color="secondary" @click="goToLogin">
+            ¿Ya tienes cuenta? Inicia sesión
+          </v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -58,4 +108,35 @@ const register = async () => {
     errorMessage.value = error.message;
   }
 };
+
+const goToLogin = () => {
+  router.push('/');
+};
 </script>
+
+<style scoped>
+.v-container {
+  background-color: #f5f5f5;
+}
+
+.v-card {
+  border-radius: 16px;
+}
+
+.primary--text {
+  color: #1976d2;
+}
+
+.v-btn {
+  font-weight: 500;
+}
+
+.v-alert {
+  font-weight: 400;
+  font-size: 14px;
+}
+
+.v-text-field input {
+  font-size: 16px;
+}
+</style>
