@@ -157,15 +157,15 @@ app.post('/auth/login', async (req, res) => {
         }
 
 
-        res.json({ 
+        res.json({
             message: 'Login exitoso',
-            userInfo:{
+            userInfo: {
                 username: user.username,
                 email: user.email
             },
-            token, 
+            token,
             permission: permission.name
-         });
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al iniciar sesión' });
@@ -223,6 +223,35 @@ app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
         res.status(500).json({ message: 'Error al modificar permiso' });
     }
 
+});
+
+app.post('/group', verifyTokenTeacher, async (req, res) => {
+    const { groupName, autoJoin } = req.body;
+
+    if (!groupName) {
+        return res.status(400).json({ message: 'Se requiere un grupo' });
+    }
+
+    try {
+
+        // Buscar si el grupo ya existe
+        const group = await communicationManager.findGroupByName(groupName);
+
+        // Guardar el grupo en la base de datos a través del communicationManager
+        if (!group) await communicationManager.registerGroup(groupName);
+
+        if (autoJoin) {
+            // Asignar el grupo al usuario
+            await communicationManager.assignGroupToUser(
+                req.user.id,
+                group.id);
+        }
+
+        res.status(201).json({ message: 'Grupo registrado exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al registrar grupo' });
+    }
 });
 
 // Iniciar servidor

@@ -13,30 +13,68 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+// USER FUNCTIONS
 // Función para buscar un usuario por su useremail
 async function findUserByMail(useremail) {
   const query = 'SELECT * FROM users WHERE email = ?';
   const [rows] = await pool.query(query, [useremail]);
   return rows[0]; // Devuelve el primer resultado (puede ser undefined)
 }
-
 // Función para registrar un usuario
 async function registerUser(username, email, hashedPassword, permission_type_id) {
   const query = 'INSERT INTO users (username, email, password, permission_type_id	) VALUES (?, ?, ?, ?)';
   const [result] = await pool.query(query, [username, email, hashedPassword, permission_type_id]);
   return result;
 }
-
+// Función para actualizar un usuario
 async function updateUser(userId, newEmail, newUsername) {
   const query = 'UPDATE users SET email = ?, username = ? WHERE id = ?';
   const [result] = await pool.query(query, [newEmail, newUsername, userId]);
 }
-
+// Función para modificar el permiso de un usuario
 async function modifyPermission(email, permission_type_id) {
   const query = 'UPDATE users SET permission_type_id = ? WHERE email = ?';
   const [result] = await pool.query(query, [permission_type_id, email]);
 }
 
+// GROUP FUNCTIONS
+// Función para buscar un grupo por su nombre
+async function findGroupByName(group) {
+  const query = 'SELECT * FROM class_groups WHERE name = ?';
+  const [rows] = await pool.query(query, [group]);
+  return rows[0]; // Devuelve el primer resultado (puede ser undefined)
+}
+// Función para registrar un grupo
+async function registerGroup(group) {
+  const query = 'INSERT INTO class_groups (name) VALUES (?)';
+  const [result] = await pool.query(query, [group]);
+  return result;
+}
+// Función para actualizar un grupo
+async function updateGroup(groupId, newName) {
+  const query = 'UPDATE class_groups SET name = ? WHERE id = ?';
+  const [result] = await pool.query(query, [newName, groupId]);
+}
+// Función para eliminar un grupo
+async function deleteGroup(groupId) {
+  const query = 'DELETE FROM class_groups WHERE id = ?';
+  const [result] = await pool.query(query, [groupId]);
+}
+// Función para obtener todos los grupos
+async function getAllGroups() {
+  const query = 'SELECT * FROM class_groups';
+  const [rows] = await pool.query(query);
+  return rows;
+}
+// Funcion de asignacion de grupo a un usuario
+async function assignGroupToUser(userId, groupId) {
+  const query = 'INSERT INTO teacher_class_groups (user_id, class_group_id) VALUES (?, ?)';
+  const [result] = await pool.query(query, [userId, groupId]);
+  return result;
+}
+
+
+// PERMISSION FUNCTIONS
 async function getAllPermissions() {
   const query = 'SELECT * FROM permission_types';
   const [rows] = await pool.query(query);
@@ -49,11 +87,18 @@ async function getPermissionById(id) {
 }
 
 const communicationManager = {
-  registerUser,
   findUserByMail,
+  registerUser,
+  updateUser,
+  modifyPermission,
+  findGroupByName,
+  registerGroup,
+  updateGroup,
+  deleteGroup,
+  getAllGroups,
+  assignGroupToUser,
   getAllPermissions,
   getPermissionById,
-  modifyPermission,
 };
 
 export default communicationManager;
