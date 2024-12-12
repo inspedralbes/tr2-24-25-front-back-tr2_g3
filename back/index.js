@@ -87,30 +87,39 @@ app.post('/auth/login', async (req, res) => {
             return res.status(401).json({ message: 'Contraseña incorrecta' });
         }
 
-        const permission = communicationManager.getPermissionById(user.permission);
+        const permission = await communicationManager.getPermissionById(user.permission_type_id);
 
         let token;
 
         // Generar el token JWT
-        switch (user.permission) {
+        switch (permission.id) {
             case 1:
-                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_ADMIN, { expiresIn: '1h' });
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_ADMIN, { expiresIn: '1h' });
                 console.log('Usuario admin');
                 break;
             case 2:
                 console.log('Usuario profesor');
-                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_TEACHER, { expiresIn: '1h' });
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_TEACHER, { expiresIn: '1h' });
                 break;
             case 3:
                 console.log('Usuario alumno');
-                token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET_STUDENT, { expiresIn: '1h' });
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_STUDENT, { expiresIn: '1h' });
                 break;
             default:
                 console.log('Usuario sin permisos');
                 break;
         }
 
-        res.json({ message: 'Login exitoso', token, permission });
+
+        res.json({ 
+            message: 'Login exitoso',
+            userInfo:{
+                username: user.username,
+                email: user.email
+            },
+            token, 
+            permission: permission.name
+         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al iniciar sesión' });
@@ -119,18 +128,21 @@ app.post('/auth/login', async (req, res) => {
 
 // Registro de usuarios
 app.post('/auth/register', async (req, res) => {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ message: 'Se requieren usuario y contraseña' });
+    if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Se requieren usuario, email y contraseña' });
     }
 
     try {
         // Encriptar la contraseña
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // permission
+        const permission_type_id = 3
+
         // Guardar el usuario en la base de datos a través del communicationManager
-        await communicationManager.registerUser(username, hashedPassword);
+        await communicationManager.registerUser(username, email, hashedPassword, permission_type_id);
 
         res.status(201).json({ message: 'Usuario registrado exitosamente' });
     } catch (error) {
@@ -160,9 +172,9 @@ function verifyToken(secrets) {
         return res.status(403).json({ message: 'Token inválido o expirado' }); // Ningún secreto válido
     };
 }
-const verifyTokenAdmin = verifyToken([JWT_SECRET_ADMIN]);
-const verifyTokenTeacher = verifyToken([JWT_SECRET_ADMIN, JWT_SECRET_TEACHER]);
-const verifyTokenStudent = verifyToken([JWT_SECRET_ADMIN, JWT_SECRET_TEACHER, JWT_SECRET_STUDENT]);
+const verifyTokenAdmin = verifyToken([process.env.JWT_SECRET_ADMIN]);
+const verifyTokenTeacher = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER]);
+const verifyTokenStudent = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER, process.env.JWT_SECRET_STUDENT]);
 
 // Ruta protegida de ejemplo
 app.get('/protected', verifyToken, (req, res) => {

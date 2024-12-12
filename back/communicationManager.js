@@ -13,10 +13,16 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
+async function updateUser(userId, newEmail, newUsername) {
+  const query = 'UPDATE users SET email = ?, username = ? WHERE id = ?';
+  const [result] = await pool.query(query, [newEmail, newUsername, userId]);
+}
+
+
 // Función para registrar un usuario
-async function registerUser(username, hashedPassword) {
-  const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
-  const [result] = await pool.query(query, [username, hashedPassword]);
+async function registerUser(username, email, hashedPassword, permission_type_id) {
+  const query = 'INSERT INTO users (username, email, password, permission_type_id	) VALUES (?, ?, ?, ?)';
+  const [result] = await pool.query(query, [username, email, hashedPassword, permission_type_id]);
   return result;
 }
 
@@ -28,12 +34,12 @@ async function findUserByMail(useremail) {
 }
 
 async function getAllPermissions() {
-  const query = 'SELECT * FROM permissions';
+  const query = 'SELECT * FROM permission_types';
   const [rows] = await pool.query(query);
   return rows;
 }
 async function getPermissionById(id) {
-  const query = 'SELECT * FROM permissions WHERE id = ?';
+  const query = 'SELECT * FROM permission_types WHERE id = ?';
   const [rows] = await pool.query(query, [id]);
   return rows[0];
 }
