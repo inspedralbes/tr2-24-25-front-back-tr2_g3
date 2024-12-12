@@ -64,6 +64,52 @@ app.get('/', (req, res) => {
     res.json({ message: 'Servidor funcionando correctamente' });
 });
 
+function verifyToken(secrets) {
+    return (req, res, next) => {
+        const token = req.headers['authorization']?.split(' ')[1]; // Leer el token del encabezado "Authorization"
+
+        if (!token) {
+            return res.status(401).json({ message: 'Token no proporcionado' });
+        }
+
+        for (const secret of secrets) {
+            try {
+                const decoded = jwt.verify(token, secret); // Intentar verificar el token
+                req.user = decoded; // Agregar los datos del usuario decodificado al objeto de solicitud
+                return next(); // Token válido
+            } catch (error) {
+                // Continuar intentando con otros secretos
+            }
+        }
+
+        return res.status(403).json({ message: 'Token inválido o expirado' }); // Ningún secreto válido
+    };
+}
+const verifyTokenAdmin = verifyToken([process.env.JWT_SECRET_ADMIN]);
+const verifyTokenTeacher = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER]);
+const verifyTokenStudent = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER, process.env.JWT_SECRET_STUDENT]);
+
+// Ruta protegida de ejemplo
+app.get('/protected', verifyToken, (req, res) => {
+    res.json({ message: `Bienvenido, ${JSON.stringify(req.body)}` });
+});
+
+// Socket.IO
+io.on('connection', (socket) => {
+    console.log(`Usuario conectado: ${socket.id}`);
+
+    // Escuchar eventos
+    socket.on('mensaje', (data) => {
+        console.log(`Mensaje recibido: ${data}`);
+        // Enviar una respuesta a todos los clientes conectados
+        io.emit('respuesta', `Servidor recibió: ${data}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Usuario desconectado: ${socket.id}`);
+    });
+});
+
 // Login de usuarios
 app.post('/auth/login', async (req, res) => {
     const { email, password } = req.body;
@@ -151,50 +197,32 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-function verifyToken(secrets) {
-    return (req, res, next) => {
-        const token = req.headers['authorization']?.split(' ')[1]; // Leer el token del encabezado "Authorization"
+// admin modifica el permiso de un usuario
+app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 
-        if (!token) {
-            return res.status(401).json({ message: 'Token no proporcionado' });
+    const { email, permission_type_id } = req.body;
+
+    if (!email || !permission_type_id) {
+        return res.status(400).json({ message: 'Se requieren email y permiso' });
+    }
+
+    try {
+        // Buscar el usuario en la base de datos a través del communicationManager
+        const user = await communicationManager.findUserByMail(email);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        for (const secret of secrets) {
-            try {
-                const decoded = jwt.verify(token, secret); // Intentar verificar el token
-                req.user = decoded; // Agregar los datos del usuario decodificado al objeto de solicitud
-                return next(); // Token válido
-            } catch (error) {
-                // Continuar intentando con otros secretos
-            }
-        }
+        // Modificar el permiso
+        await communicationManager.modifyPermission(email, permission_type_id);
 
-        return res.status(403).json({ message: 'Token inválido o expirado' }); // Ningún secreto válido
-    };
-}
-const verifyTokenAdmin = verifyToken([process.env.JWT_SECRET_ADMIN]);
-const verifyTokenTeacher = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER]);
-const verifyTokenStudent = verifyToken([process.env.JWT_SECRET_ADMIN, process.env.JWT_SECRET_TEACHER, process.env.JWT_SECRET_STUDENT]);
+        res.status(201).json({ message: 'Permiso modificado exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al modificar permiso' });
+    }
 
-// Ruta protegida de ejemplo
-app.get('/protected', verifyToken, (req, res) => {
-    res.json({ message: `Bienvenido, ${JSON.stringify(req.body)}` });
-});
-
-// Socket.IO
-io.on('connection', (socket) => {
-    console.log(`Usuario conectado: ${socket.id}`);
-
-    // Escuchar eventos
-    socket.on('mensaje', (data) => {
-        console.log(`Mensaje recibido: ${data}`);
-        // Enviar una respuesta a todos los clientes conectados
-        io.emit('respuesta', `Servidor recibió: ${data}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`Usuario desconectado: ${socket.id}`);
-    });
 });
 
 // Iniciar servidor
