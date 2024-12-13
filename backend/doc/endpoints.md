@@ -167,7 +167,42 @@ A route to change permissions for a user (only admin)
 ### **Add group**
 **POST** `/group`
 
-A route to
+A route to create/join group "groupName" to specify the name and autoJoin to specify if you want to be asigned
+
+#### **Headers:**
+```json
+{
+    "Authorization": "Bearer your.jwt.token"
+}
+```
+#### **Request Body:**
+```json
+{
+    "groupName": "string",
+    "autoJoin": boolean
+}
+```
+
+#### **Response:**
+- **201 OK**:
+```json
+{
+    "message": "Grupo registrado exitosamente"
+}
+```
+
+- **400 Group name not provided**:
+```json
+{
+    "message": "Se requiere un grupo"
+}
+```
+
+- **500 Error modifying**:
+```json
+{
+    "message": "Error al modificar permiso"
+}
 
 ---
 
