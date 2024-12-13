@@ -53,7 +53,12 @@ Authenticates a user and returns a JWT.
 ```json
 {
     "message": "Inicio de sesión exitoso",
-    "token": "your.jwt.token"
+    "userInfo": {
+        "username": "usr",
+        "email": "usr@example.com"
+    },
+    "token": "your.jwt.token",
+    "permission": "student"
 }
 ```
 
@@ -101,6 +106,68 @@ A route that requires a valid JWT to access.
     "message": "Token inválido o expirado"
 }
 ```
+
+### **Modify permission**
+**POST** `/modify-permission`
+
+A route to change permissions for a user (only admin)
+
+#### **Headers:**
+```json
+{
+    "Authorization": "Bearer your.jwt.token"
+}
+```
+#### **Request Body:**
+```json
+{
+    "email": "string",
+    "permission_type_id": INT
+}
+```
+
+#### **Response:**
+- **201 OK**:
+```json
+{
+    "message": "Permiso modificado exitosamente"
+}
+```
+
+- **400 No email or No permission type**:
+```json
+{
+    "message": "Se requieren email y permiso"
+}
+```
+
+- **401 Unauthorized** (e.g., no token provided):
+```json
+{
+    "message": "Token no proporcionado"
+}
+```
+
+- **404 User not found**:
+```json
+{
+    "message": "Usuario no encontrado"
+}
+```
+
+- **500 Error modifying**:
+```json
+{
+    "message": "Error al modificar permiso"
+}
+```
+
+---
+
+### **Add group**
+**POST** `/group`
+
+A route to
 
 ---
 
