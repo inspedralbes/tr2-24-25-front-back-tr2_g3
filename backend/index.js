@@ -7,11 +7,11 @@ import bcrypt from 'bcryptjs'; // Encriptación de contraseñas
 import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
+import generateQuestions from './generateQuestionFunctions.js'; // generateQuestions(numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions)
 
 dotenv.config(); // Carga las variables de entorno de .env
 
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_llave_secreta';
 
 // Configuración del servidor
 const app = express();
