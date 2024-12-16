@@ -259,6 +259,7 @@ app.get('/group', verifyTokenTeacher, async (req, res) => {
     const groups = await communicationManager.getAllGroups()
     res.json(groups);
 });
+
 app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
     const groups = await communicationManager.getGroupsFromTeacher(req.user.id)
     res.json(groups);
