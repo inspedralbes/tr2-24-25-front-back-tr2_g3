@@ -107,6 +107,8 @@ A route that requires a valid JWT to access.
 }
 ```
 
+---
+
 ### **Modify permission**
 **POST** `/modify-permission`
 
@@ -203,8 +205,79 @@ A route to create/join group "groupName" to specify the name and autoJoin to spe
 {
     "message": "Error al modificar permiso"
 }
+```
 
 ---
+
+### **Get groups**
+**GET** `/group`
+
+A route to get all groups (teacher/admin)
+
+#### **Headers:**
+```json
+{
+    "Authorization": "Bearer your.jwt.token"
+}
+```
+
+#### **Response:**
+- **200 OK**:
+```json
+[
+  {
+    "class_group_id": INT,
+    "class_group_name": "string"
+  },
+  {
+    "class_group_id": INT,
+    "class_group_name": "string"
+  }
+]
+```
+
+- **500 Error getting groups**:
+```json
+{
+    "message": "Error al obtener los grupos"
+}
+```
+
+---
+
+### **Get groups assigned to me**
+**GET** `/group/assigned`
+
+A route to get all groups assigned to the user token (teacher/admin)
+
+#### **Headers:**
+```json
+{
+    "Authorization": "Bearer your.jwt.token"
+}
+```
+
+#### **Response:**
+- **200 OK**:
+```json
+[
+  {
+    "class_group_id": INT,
+    "class_group_name": "string"
+  },
+  {
+    "class_group_id": INT,
+    "class_group_name": "string"
+  }
+]
+```
+
+- **500 Error getting groups**:
+```json
+{
+    "message": "Error al obtener los grupos"
+}
+```
 
 ## Error Codes
 
@@ -221,5 +294,5 @@ A route to create/join group "groupName" to specify the name and autoJoin to spe
 
 ### Notes
 - Always include the JWT token in the `Authorization` header for protected routes.
-- Use a `.env` file to configure the `JWT_SECRET` and database connection details.
+- Use a `.env` file to configure the `JWT_SECRET`'s and database connection details.
 

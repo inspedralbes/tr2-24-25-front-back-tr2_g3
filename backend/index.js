@@ -256,13 +256,23 @@ app.post('/group', verifyTokenTeacher, async (req, res) => {
 });
 
 app.get('/group', verifyTokenTeacher, async (req, res) => {
-    const groups = await communicationManager.getAllGroups()
-    res.json(groups);
+    try {
+        const groups = await communicationManager.getAllGroups()
+        res.json(groups);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los grupos' });
+    }
 });
 
 app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
-    const groups = await communicationManager.getGroupsFromTeacher(req.user.id)
-    res.json(groups);
+    try {
+        const groups = await communicationManager.getGroupsFromTeacher(req.user.id)
+        res.json(groups);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los grupos' });
+    }
 });
 
 // Iniciar servidor
