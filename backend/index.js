@@ -225,6 +225,7 @@ app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 
 });
 
+// Ruta per crear un grup y/o asignarse a ell
 app.post('/group', verifyTokenTeacher, async (req, res) => {
     const { groupName, autoJoin } = req.body;
 
@@ -252,6 +253,15 @@ app.post('/group', verifyTokenTeacher, async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Error al registrar grupo' });
     }
+});
+
+app.get('/group', verifyTokenTeacher, async (req, res) => {
+    const groups = await communicationManager.getAllGroups()
+    res.json(groups);
+});
+app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
+    const groups = await communicationManager.getGroupsFromTeacher(req.user.id)
+    res.json(groups);
 });
 
 // Iniciar servidor

@@ -14,6 +14,13 @@ const pool = mysql.createPool({
 });
 
 // USER FUNCTIONS
+// Función para obtener los usuarios
+async function getUsers() {
+  const query = 'SELECT * FROM users';
+  const [rows] = await pool.query(query);
+  return rows;
+}
+
 // Función para buscar un usuario por su useremail
 async function findUserByMail(useremail) {
   const query = 'SELECT * FROM users WHERE email = ?';
@@ -38,12 +45,27 @@ async function modifyPermission(email, permission_type_id) {
 }
 
 // GROUP FUNCTIONS
+// Función para obtener todos los grupos
+async function getAllGroups() {
+  const query = 'SELECT * FROM class_groups';
+  const [rows] = await pool.query(query);
+  return rows;
+}
+
 // Función para buscar un grupo por su nombre
 async function findGroupByName(group) {
   const query = 'SELECT * FROM class_groups WHERE name = ?';
   const [rows] = await pool.query(query, [group]);
   return rows[0]; // Devuelve el primer resultado (puede ser undefined)
 }
+
+// Función para obtener los grupos de un profesor
+async function getGroupsFromTeacher(teacher_id) {
+  const query = 'SELECT cg.id AS class_group_id, cg.name AS class_group_name FROM class_groups cg JOIN teacher_class_groups tcg ON cg.id = tcg.class_group_id WHERE tcg.user_id = ?'
+  const [rows] = await pool.query(query, [teacher_id]);
+  return rows;
+}
+
 // Función para registrar un grupo
 async function registerGroup(group) {
   const query = 'INSERT INTO class_groups (name) VALUES (?)';
@@ -60,12 +82,7 @@ async function deleteGroup(groupId) {
   const query = 'DELETE FROM class_groups WHERE id = ?';
   const [result] = await pool.query(query, [groupId]);
 }
-// Función para obtener todos los grupos
-async function getAllGroups() {
-  const query = 'SELECT * FROM class_groups';
-  const [rows] = await pool.query(query);
-  return rows;
-}
+
 // Funcion de asignacion de grupo a un usuario
 async function assignGroupToUser(userId, groupId) {
   const query = 'INSERT INTO teacher_class_groups (user_id, class_group_id) VALUES (?, ?)';
@@ -87,6 +104,7 @@ async function getPermissionById(id) {
 }
 
 const communicationManager = {
+  getUsers,
   findUserByMail,
   registerUser,
   updateUser,
@@ -96,6 +114,7 @@ const communicationManager = {
   updateGroup,
   deleteGroup,
   getAllGroups,
+  getGroupsFromTeacher,
   assignGroupToUser,
   getAllPermissions,
   getPermissionById,
