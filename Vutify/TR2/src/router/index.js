@@ -5,12 +5,15 @@ import { setupLayouts } from 'virtual:generated-layouts';
 import Login from '@/components/Login.vue';
 import Register from '@/components/Register.vue';
 import Main from '@/components/Main.vue';
+import GestionMates from '@/components/GestionMates.vue';
+
 
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
   { path: '/register', name: 'Register', component: Register }, 
   { path: '/main', name: 'Main', component: Main },
+  { path: '/GestionMates', name: 'GestionMates', component: GestionMates}
 ];
 
 const router = createRouter({
