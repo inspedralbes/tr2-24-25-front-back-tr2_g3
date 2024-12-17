@@ -275,6 +275,12 @@ app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
     }
 });
 
+app.get('/question', async (req, res) => {
+    const { numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions } = req.body
+    const questions = generateQuestions(numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions)
+    res.status(200).json(questions);
+});
+
 // Iniciar servidor
 server.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
