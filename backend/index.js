@@ -197,6 +197,17 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
+// Ruta para obener los usuarios
+app.get('/user', verifyTokenAdmin, async (req, res) => {
+    try {
+        const users = await communicationManager.getUsers()
+        res.json(users);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al obtener los grupos' });
+    }
+});
+
 // admin modifica el permiso de un usuario
 app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 

@@ -109,6 +109,56 @@ A route that requires a valid JWT to access.
 
 ---
 
+### **Get users**
+**GET** `/user`
+
+A route to get all users (only admin)
+
+#### **Headers:**
+```json
+{
+    "Authorization": "Bearer your.jwt.token"
+}
+```
+#### **Response:**
+- **201 OK**:
+```json
+[
+  {
+    "id": 6,
+    "username": "usr",
+    "email": "usr@example.com"
+  },
+  {
+    "id": 7,
+    "username": "usr2",
+    "email": "usr2@example.com"
+  }
+]
+```
+
+- **401 Unauthorized** (e.g., no token provided):
+```json
+{
+    "message": "Token no proporcionado"
+}
+```
+
+- **403 Forbidden** (e.g., invalid token):
+```json
+{
+    "message": "Token inválido o expirado"
+}
+```
+- **500 Error getting users**:
+```json
+{
+    "message": "Error al obtener los grupos"
+}
+```
+
+---
+
 ### **Modify permission**
 **POST** `/modify-permission`
 
@@ -147,6 +197,13 @@ A route to change permissions for a user (only admin)
 ```json
 {
     "message": "Token no proporcionado"
+}
+```
+
+- **403 Forbidden** (e.g., invalid token):
+```json
+{
+    "message": "Token inválido o expirado"
 }
 ```
 
@@ -197,6 +254,20 @@ A route to create/join group "groupName" to specify the name and autoJoin to spe
 ```json
 {
     "message": "Se requiere un grupo"
+}
+```
+
+- **401 Unauthorized** (e.g., no token provided):
+```json
+{
+    "message": "Token no proporcionado"
+}
+```
+
+- **403 Forbidden** (e.g., invalid token):
+```json
+{
+    "message": "Token inválido o expirado"
 }
 ```
 
