@@ -4,13 +4,26 @@
       <v-col cols="12" sm="6" md="4">
         <!-- Tarjeta del juego -->
         <v-card class="elevation-10" max-width="400">
-          <!-- Imagen del juego -->
+          <!-- Imagen del juego con opción de descarga -->
           <v-img
-            src="https://via.placeholder.com/400x200.png?text=Imagen+del+Juego"
+            :src="imageSrc"
             alt="Imagen del Juego"
             height="200px"
             class="rounded-t-lg"
           >
+            <!-- Botón de descarga -->
+            <template #append>
+              <v-btn
+                icon
+                color="primary"
+                :href="imageSrc"
+                download="JuegoMatematicas.png"
+                class="download-btn"
+                title="Descargar imagen"
+              >
+                <v-icon>mdi-download</v-icon>
+              </v-btn>
+            </template>
           </v-img>
 
           <v-card-text class="text-center">
@@ -36,16 +49,21 @@
 </template>
 
 <script>
+import { useRouter } from "vue-router";
+import imageSrc from "@/assets/images/imagen.png";
+
 export default {
   name: "Main",
   setup() {
     const router = useRouter();
+
     const GestionMates = () => {
-    router.push('/GestionMates');
+      router.push("/GestionMates");
     };
 
     return {
       GestionMates,
+      imageSrc,
     };
   },
 };
@@ -63,6 +81,20 @@ export default {
 .v-img {
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
+  position: relative;
+}
+
+.download-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+}
+
+.download-btn:hover {
+  background-color: rgba(255, 255, 255, 1);
 }
 
 .v-btn {

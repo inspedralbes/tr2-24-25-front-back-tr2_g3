@@ -1,5 +1,6 @@
+// stores/appStore.js
 import { defineStore } from 'pinia';
-import { login, register } from '@/services/authService'; 
+import { login, register } from '@/services/authService'; // Asegúrate de que estos métodos estén definidos
 
 export const useAppStore = defineStore('app', {
   state: () => ({
@@ -7,8 +8,8 @@ export const useAppStore = defineStore('app', {
       name: '',
       email: '',
     },
-    token: '',
-    isAuthenticated: false,
+    token: localStorage.getItem('token') || '', // Recuperar token desde localStorage si existe
+    isAuthenticated: !!localStorage.getItem('token'), // Verificar si hay un token en localStorage
   }),
   actions: {
     async login(email, password) {
@@ -17,6 +18,10 @@ export const useAppStore = defineStore('app', {
         this.token = data.token;
         this.user = { ...this.user, email };
         this.isAuthenticated = true;
+        
+        // Guardar el token en localStorage
+        localStorage.setItem('token', data.token);
+        
         return true;
       } catch (error) {
         console.error('Error al iniciar sesión:', error.message);
@@ -26,7 +31,7 @@ export const useAppStore = defineStore('app', {
 
     async register(name, email, password) {
       try {
-        const data = await register(name, email, password); 
+        const data = await register(name, email, password);
         console.log(data.message);
         return true;
       } catch (error) {
@@ -39,6 +44,9 @@ export const useAppStore = defineStore('app', {
       this.user = { name: '', email: '' };
       this.token = '';
       this.isAuthenticated = false;
+      
+      // Eliminar el token de localStorage al cerrar sesión
+      localStorage.removeItem('token');
     },
   },
 });

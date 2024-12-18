@@ -11,7 +11,7 @@
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-text-field v-model="email" label="Correo electrónico" :rules="[rules.required, rules.email]" required type="email" outlined dense clearable></v-text-field>
-          <v-text-field v-model="password" label="Contraseña" :rules="[rules.required, rules.minLength(6)]" required type="password" outlined dense clearable></v-text-field>
+          <v-text-field v-model="password" label="Contraseña" :rules="[rules.required]" required type="password" outlined dense clearable></v-text-field>
 
           <v-alert v-if="errorMessage" type="error" class="mt-4" dismissible>{{ errorMessage }}</v-alert>
 
@@ -38,7 +38,6 @@ const router = useRouter();
 const rules = {
   required: (value) => !!value || 'Este campo es obligatorio',
   email: (value) => /.+@.+\..+/.test(value) || 'Introduce un correo electrónico válido',
-  minLength: (length) => (value) => value.length >= length || `Debe tener al menos ${length} caracteres`,
 };
 
 const login = async () => {
