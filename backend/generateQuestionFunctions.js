@@ -29,6 +29,7 @@ const generateAdditionQuestions = (numQuestions) => {
       option3: options[2].toString(),
       option4: options[3].toString(),
       correct_answer: correctOption,
+      operation_type: 'addition',
     });
   }
 
@@ -66,6 +67,7 @@ const generateSubtractionQuestions = (numQuestions) => {
       option3: options[2].toString(),
       option4: options[3].toString(),
       correct_answer: correctOption,
+      operation_type: 'subtraction',
     });
   }
 
@@ -103,6 +105,7 @@ const generateMultiplicationQuestions = (numQuestions) => {
       option3: options[2].toString(),
       option4: options[3].toString(),
       correct_answer: correctOption,
+      operation_type: 'multiplication',
     });
   }
 
@@ -141,6 +144,7 @@ const generateDivisionQuestions = (numQuestions) => {
       option3: options[2].toString(),
       option4: options[3].toString(),
       correct_answer: correctOption,
+      operation_type: 'division',
     });
   }
 
