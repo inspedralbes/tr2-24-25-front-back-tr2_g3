@@ -74,7 +74,7 @@ Authenticates a user and returns a JWT.
 ### **Get questions**
 **GET** `/question`
 
-A route to get random questions shuffled
+A route to get shuffled random questions
 
 #### **Request Body:**
 ```json
