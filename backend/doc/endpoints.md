@@ -71,6 +71,46 @@ Authenticates a user and returns a JWT.
 
 ---
 
+### **Get questions**
+**GET** `/question`
+
+A route to get random questions shuffled
+
+#### **Request Body:**
+```json
+{
+    "numAdditionQuestions": INT,
+    "numSubtractionQuestions": INT,
+    "numMultiplicationQuestions": INT,
+    "numDivisionQuestions": INT
+}
+```
+
+#### **Response:**
+- **200 OK**:
+```json
+[
+    {
+        "question": "string",
+        "option1": "string",
+        "option2": "string",
+        "option3": "string",
+        "option4": "string",
+        "correct_answer": INT
+    },
+    {
+        "question": "string",
+        "option1": "string",
+        "option2": "string",
+        "option3": "string",
+        "option4": "string",
+        "correct_answer": INT
+    }
+]
+```
+
+---
+
 ## Protected Endpoints
 
 ### **Example Protected Route**
