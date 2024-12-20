@@ -14,8 +14,7 @@ async function login(email, password) {
             password,
         }),
     });
-    const data = await response.json();
-    return data;
+    return response;
 }
 
 async function register(username, email, password) {

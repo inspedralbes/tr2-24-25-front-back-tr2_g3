@@ -73,7 +73,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '../stores/app'; 
 import communicationManager from '@/services/communicationManager';
-const store = useAppStore();
 
 const name = ref('');
 const email = ref('');

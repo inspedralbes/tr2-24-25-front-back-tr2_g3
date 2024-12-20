@@ -27,8 +27,9 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
-import { communicationManager } from '@/services/communicationManager';
-const store = useAppStore();
+import communicationManager from '../services/communicationManager';
+
+const pinia = useAppStore()
 
 const email = ref('');
 const password = ref('');
@@ -43,21 +44,22 @@ const rules = {
 
 const login = async () => {
   try {
-    const response = await communicationManager.login(email, password);
+    const response = await communicationManager.login(email.value, password.value);
 
     if(!response.ok){
       errorMessage.value = 'Credenciales incorrectas';
       return
     }
 
-    const data = response.json()
+    const data = await response.json()
     
-    useAppStore.setToken(data.token);
-    useAppStore.setUser(data.userInfo.username, data.userInfo.email);
+    pinia.setToken(data.token);
+    pinia.setUser(data.userInfo.username, data.userInfo.email);
     
     router.push('/main');
 
   } catch (error) {
+    if(error.status)
     console.error('Error de login:', error.message);
     errorMessage.value = error.message;
   }
