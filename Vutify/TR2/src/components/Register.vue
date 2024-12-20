@@ -72,6 +72,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '../stores/app'; 
+import communicationManager from '@/services/communicationManager';
 const store = useAppStore();
 
 const name = ref('');
@@ -90,23 +91,38 @@ const rules = {
 };
 
 const register = async () => {
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Las contraseñas no coinciden';
-    return;
-  }
 
   try {
-    const success = await store.register(name.value, email.value, password.value); 
-    if (success) {
-      alert('Registro exitoso');
-      router.push('/'); 
-    } else {
+    const response = await communicationManager.register(username, email, password);
+
+    if (!response.ok) {
       errorMessage.value = 'Error al registrar el usuario';
     }
+    alert('Registro exitoso');
+    router.push('/'); 
+    
   } catch (error) {
     console.error('Error de registro:', error.message);
     errorMessage.value = error.message;
   }
+
+  // if (password.value !== confirmPassword.value) {
+  //   errorMessage.value = 'Las contraseñas no coinciden';
+  //   return;
+  // }
+
+  // try {
+  //   const success = await store.register(name.value, email.value, password.value); 
+  //   if (success) {
+  //     alert('Registro exitoso');
+  //     router.push('/'); 
+  //   } else {
+  //     errorMessage.value = 'Error al registrar el usuario';
+  //   }
+  // } catch (error) {
+  //   console.error('Error de registro:', error.message);
+  //   errorMessage.value = error.message;
+  // }
 };
 
 const goToLogin = () => {

@@ -29,7 +29,7 @@
 
       <v-data-table
         :headers="headers"
-        :items="usuariosFiltrados"  <!-- Aquí usamos la propiedad computada -->
+        :items="usuariosFiltrados"  
         :search="busqueda"
         :loading="cargando"
         class="elevation-1"

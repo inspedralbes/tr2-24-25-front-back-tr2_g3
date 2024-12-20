@@ -26,7 +26,8 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAppStore } from '../stores/app'; 
+import { useAppStore } from '@/stores/app';
+import { communicationManager } from '@/services/communicationManager';
 const store = useAppStore();
 
 const email = ref('');
@@ -42,16 +43,35 @@ const rules = {
 
 const login = async () => {
   try {
-    const success = await store.login(email.value, password.value); 
-    if (success) {
-      router.push('/main'); 
-    } else {
+    const response = await communicationManager.login(email, password);
+
+    if(!response.ok){
       errorMessage.value = 'Credenciales incorrectas';
+      return
     }
+
+    const data = response.json()
+    
+    useAppStore.setToken(data.token);
+    useAppStore.setUser(data.userInfo.username, data.userInfo.email);
+    
+    router.push('/main');
+
   } catch (error) {
     console.error('Error de login:', error.message);
     errorMessage.value = error.message;
   }
+  // try {
+  //   const success = await store.login(email.value, password.value); 
+  //   if (success) {
+  //     router.push('/main'); 
+  //   } else {
+  //     errorMessage.value = 'Credenciales incorrectas';
+  //   }
+  // } catch (error) {
+  //   console.error('Error de login:', error.message);
+  //   errorMessage.value = error.message;
+  // }
 };
 
 const goToRegister = () => {
