@@ -5,7 +5,7 @@
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-text-field 
-            v-model="name" 
+            v-model="username" 
             label="Nombre Completo" 
             :rules="[rules.required]" 
             required 
@@ -69,18 +69,19 @@
 </template>
 
 <script setup>
+import { useAppStore } from '@/stores/app';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAppStore } from '../stores/app'; 
 import communicationManager from '@/services/communicationManager';
+import { useRouter } from 'vue-router';
 
-const name = ref('');
+const store = useAppStore();
+const router = useRouter();
+const username = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
 const errorMessage = ref('');
 const valid = ref(false);
-const router = useRouter();
 
 const rules = {
   required: (value) => !!value || 'Este campo es obligatorio',
@@ -90,38 +91,19 @@ const rules = {
 };
 
 const register = async () => {
-
   try {
-    const response = await communicationManager.register(username, email, password);
+    const userData = store.getUserData(); 
+    const response = await communicationManager.register(username.value, email.value, password.value);
 
     if (!response.ok) {
       errorMessage.value = 'Error al registrar el usuario';
     }
     alert('Registro exitoso');
-    router.push('/'); 
-    
+    router.push('/');
   } catch (error) {
     console.error('Error de registro:', error.message);
     errorMessage.value = error.message;
   }
-
-  // if (password.value !== confirmPassword.value) {
-  //   errorMessage.value = 'Las contraseñas no coinciden';
-  //   return;
-  // }
-
-  // try {
-  //   const success = await store.register(name.value, email.value, password.value); 
-  //   if (success) {
-  //     alert('Registro exitoso');
-  //     router.push('/'); 
-  //   } else {
-  //     errorMessage.value = 'Error al registrar el usuario';
-  //   }
-  // } catch (error) {
-  //   console.error('Error de registro:', error.message);
-  //   errorMessage.value = error.message;
-  // }
 };
 
 const goToLogin = () => {

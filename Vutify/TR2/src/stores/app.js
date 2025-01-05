@@ -1,4 +1,3 @@
-// stores/appStore.js
 import { defineStore } from 'pinia';
 
 export const useAppStore = defineStore('app', {
@@ -10,13 +9,21 @@ export const useAppStore = defineStore('app', {
     token: '',
   }),
   actions: {
-    setUser(newName, newEmail){
-      this.user.name = newName,
-      this.user.email = newEmail
+    setUser(newName, newEmail) {
+      this.user.name = newName;
+      this.user.email = newEmail;
     },
 
-    setToken(newToken){
-      this.token = newToken
+    setToken(newToken) {
+      this.token = newToken;
+    },
+
+    getUserData() {
+      return {
+        name: this.user.name,
+        email: this.user.email,
+        token: this.token,
+      };
     },
   },
 });
