@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
 import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
+
 dotenv.config(); // Carga las variables de entorno de .env
 
 const PORT = process.env.PORT || 3000;
@@ -190,6 +191,10 @@ app.post('/auth/register', async (req, res) => {
         await communicationManager.registerUser(username, email, hashedPassword, permission_type_id);
 
         res.status(201).json({ message: 'Usuario registrado exitosamente' });
+
+        const updatedUsers = await communicationManager.getUsers();
+        io.emit('updateUsers', updatedUsers);
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al registrar usuario' });
@@ -210,24 +215,28 @@ app.get('/user', verifyTokenAdmin, async (req, res) => {
 // admin modifica el permiso de un usuario
 app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 
-    const { email, permission_type_id } = req.body;
+    const { user_id, permission_type_id } = req.body;
 
-    if (!email || !permission_type_id) {
-        return res.status(400).json({ message: 'Se requieren email y permiso' });
+    if (!user_id || !permission_type_id) {
+        return res.status(400).json({ message: 'Se requieren usuario y permiso' });
     }
 
     try {
         // Buscar el usuario en la base de datos a través del communicationManager
-        const user = await communicationManager.findUserByMail(email);
+        const user = await communicationManager.getUserById(user_id);
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         // Modificar el permiso
-        await communicationManager.modifyPermission(email, permission_type_id);
+        await communicationManager.modifyPermission(user_id, permission_type_id);
 
         res.status(201).json({ message: 'Permiso modificado exitosamente' });
+
+        const updatedUsers = await communicationManager.getUsers();
+        io.emit('updateUsers', updatedUsers);
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al modificar permiso' });
@@ -259,6 +268,10 @@ app.post('/group', verifyTokenTeacher, async (req, res) => {
         }
 
         res.status(201).json({ message: 'Grupo registrado exitosamente' });
+
+        const updatedGroups = await communicationManager.getAllGroups();
+        io.emit('updateGroups', updatedGroups);
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error al registrar grupo' });
