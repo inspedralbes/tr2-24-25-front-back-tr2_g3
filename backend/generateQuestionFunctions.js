@@ -168,4 +168,21 @@ function generateQuestions(numAdditionQuestions, numSubtractionQuestions, numMul
 
 }
 
-export default generateQuestions
+function getRandomQuestion(){
+
+  switch (Math.floor(Math.random() * 4) + 1) {
+    case 1:
+      return generateAdditionQuestions(1)[0];
+    case 2:
+      return generateSubtractionQuestions(1)[0];
+    case 3:
+      return generateMultiplicationQuestions(1)[0];
+    case 4:
+      return generateDivisionQuestions(1)[0];
+    default:
+      return generateAdditionQuestions(1)[0];
+  }
+
+}
+
+export default getRandomQuestion;

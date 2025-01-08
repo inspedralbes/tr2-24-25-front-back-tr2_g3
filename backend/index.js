@@ -7,8 +7,7 @@ import bcrypt from 'bcryptjs'; // Encriptación de contraseñas
 import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
-import generateQuestions from './generateQuestionFunctions.js'; // generateQuestions(numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions)
-
+import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
 dotenv.config(); // Carga las variables de entorno de .env
 
 const PORT = process.env.PORT || 3000;
@@ -211,22 +210,22 @@ app.get('/user', verifyTokenAdmin, async (req, res) => {
 // admin modifica el permiso de un usuario
 app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 
-    const { user_id, permission_type_id } = req.body;
+    const { email, permission_type_id } = req.body;
 
-    if (!user_id || !permission_type_id) {
-        return res.status(400).json({ message: 'Se requieren usuario y permiso' });
+    if (!email || !permission_type_id) {
+        return res.status(400).json({ message: 'Se requieren email y permiso' });
     }
 
     try {
         // Buscar el usuario en la base de datos a través del communicationManager
-        const user = await communicationManager.getUserById(user_id);
+        const user = await communicationManager.findUserByMail(email);
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         // Modificar el permiso
-        await communicationManager.modifyPermission(user_id, permission_type_id);
+        await communicationManager.modifyPermission(email, permission_type_id);
 
         res.status(201).json({ message: 'Permiso modificado exitosamente' });
     } catch (error) {
@@ -287,9 +286,8 @@ app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
 });
 
 app.get('/question', async (req, res) => {
-    const { numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions } = req.body
-    const questions = generateQuestions(numAdditionQuestions, numSubtractionQuestions, numMultiplicationQuestions, numDivisionQuestions)
-    res.status(200).json(questions);
+    const question = getRandomQuestion();
+    res.status(200).json({...question});
 });
 
 // Iniciar servidor
