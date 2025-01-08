@@ -213,7 +213,7 @@ A route to change permissions for a user (only admin)
 #### **Request Body:**
 ```json
 {
-    "email": "string",
+    "user_id": INT,
     "permission_type_id": INT
 }
 ```
@@ -229,7 +229,7 @@ A route to change permissions for a user (only admin)
 - **400 No email or No permission type**:
 ```json
 {
-    "message": "Se requieren email y permiso"
+    "message": "Se requieren usuario y permiso"
 }
 ```
 
