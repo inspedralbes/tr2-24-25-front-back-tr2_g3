@@ -140,16 +140,16 @@ app.post('/auth/login', async (req, res) => {
         // Generar el token JWT
         switch (permission.id) {
             case 1:
-                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_ADMIN, { expiresIn: '1h' });
                 console.log('Usuario admin');
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_ADMIN, { expiresIn: '24h' });
                 break;
             case 2:
                 console.log('Usuario profesor');
-                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_TEACHER, { expiresIn: '1h' });
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_TEACHER, { expiresIn: '24h' });
                 break;
             case 3:
                 console.log('Usuario alumno');
-                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_STUDENT, { expiresIn: '1h' });
+                token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET_STUDENT, { expiresIn: '24h' });
                 break;
             default:
                 console.log('Usuario sin permisos');
@@ -301,6 +301,20 @@ app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
 app.get('/question', async (req, res) => {
     const question = getRandomQuestion();
     res.status(200).json({...question});
+});
+
+let code = {};
+
+app.get('/create-code', verifyTokenTeacher, async (req, res) => {
+    // Generar un código aleatorio de 6 caracteres
+    const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    code = newCode;
+
+    res.status(200).json({ code });
+});
+
+app.post('/get-code', async (req, res) => {
+    res.status(200).json({ code });
 });
 
 // Iniciar servidor
