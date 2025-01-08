@@ -211,22 +211,22 @@ app.get('/user', verifyTokenAdmin, async (req, res) => {
 // admin modifica el permiso de un usuario
 app.post('/modify-permission', verifyTokenAdmin, async (req, res) => {
 
-    const { email, permission_type_id } = req.body;
+    const { user_id, permission_type_id } = req.body;
 
-    if (!email || !permission_type_id) {
-        return res.status(400).json({ message: 'Se requieren email y permiso' });
+    if (!user_id || !permission_type_id) {
+        return res.status(400).json({ message: 'Se requieren usuario y permiso' });
     }
 
     try {
         // Buscar el usuario en la base de datos a través del communicationManager
-        const user = await communicationManager.findUserByMail(email);
+        const user = await communicationManager.getUserById(user_id);
 
         if (!user) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         // Modificar el permiso
-        await communicationManager.modifyPermission(email, permission_type_id);
+        await communicationManager.modifyPermission(user_id, permission_type_id);
 
         res.status(201).json({ message: 'Permiso modificado exitosamente' });
     } catch (error) {

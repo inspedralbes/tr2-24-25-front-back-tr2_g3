@@ -21,6 +21,13 @@ async function getUsers() {
   return rows;
 }
 
+//Funcion para obtener un usuario por su id
+async function getUserById(id) {
+  const query = 'SELECT * FROM users WHERE id = ?';
+  const [rows] = await pool.query(query, [id]);
+  return rows[0];
+}
+
 // Función para buscar un usuario por su useremail
 async function findUserByMail(useremail) {
   const query = 'SELECT * FROM users WHERE email = ?';
@@ -39,9 +46,9 @@ async function updateUser(userId, newEmail, newUsername) {
   const [result] = await pool.query(query, [newEmail, newUsername, userId]);
 }
 // Función para modificar el permiso de un usuario
-async function modifyPermission(email, permission_type_id) {
-  const query = 'UPDATE users SET permission_type_id = ? WHERE email = ?';
-  const [result] = await pool.query(query, [permission_type_id, email]);
+async function modifyPermission(user_id, permission_type_id) {
+  const query = 'UPDATE users SET permission_type_id = ? WHERE id = ?';
+  const [result] = await pool.query(query, [permission_type_id, user_id]);
 }
 
 // GROUP FUNCTIONS
@@ -105,6 +112,7 @@ async function getPermissionById(id) {
 
 const communicationManager = {
   getUsers,
+  getUserById,
   findUserByMail,
   registerUser,
   updateUser,
