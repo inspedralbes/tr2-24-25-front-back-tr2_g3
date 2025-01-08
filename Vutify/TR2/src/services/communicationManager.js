@@ -33,12 +33,27 @@ async function register(username, email, password) {
 }
 
 async function getUser () {
+    const pinia = useAppStore();
     const response = await fetch(`${urlBase}/user`,{
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             'Accept': "application/json",
-            'Authorization': `Bearer ${useAppStore.token}`,
+            'Authorization': `Bearer ${pinia.token}`,
+            
+        },
+    });
+    return response;
+}
+
+async function getCode () {
+    const pinia = useAppStore();
+    const response = await fetch(`${urlBase}/create-code`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': "application/json",
+            'Authorization': `Bearer ${pinia.token}`,
             
         },
     });

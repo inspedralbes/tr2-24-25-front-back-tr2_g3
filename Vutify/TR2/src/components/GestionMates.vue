@@ -29,7 +29,7 @@
 
       <v-data-table
         :headers="headers"
-        :items="usuariosFiltrados"  
+        :items="usuariosFiltrados"
         :search="busqueda"
         :loading="cargando"
         class="elevation-1"
@@ -44,9 +44,6 @@
         </template>
       </v-data-table>
 
-      <v-snackbar v-model="snackbar" :color="snackbarColor" top>
-        {{ snackbarText }}
-      </v-snackbar>
 
       <v-divider class="my-4"></v-divider>
 
@@ -57,110 +54,70 @@
   </v-container>
 </template>
 
-<script>
-import axios from 'axios';
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAppStore } from '@/stores/app';
+import communicationManager from '../services/communicationManager';
+import { da } from 'vuetify/locale';
 
-export default {
-  name: "GestionMates",
-  data() {
-    return {
-      filtroRol: 'Todos',
-      busqueda: '',
-      headers: [
-        { text: "Nombre", align: "start", value: "username" },
-        { text: "Correo Electrónico", align: "start", value: "email" },
-        { text: "Rol", value: "rol" }
-      ],
-      usuarios: [],
-      cargando: false,
-      snackbar: false,
-      snackbarText: '',
-      snackbarColor: 'info'
-    };
-  },
-  computed: {
-    // Propiedad computada para filtrar los usuarios según el rol
-    usuariosFiltrados() {
-      console.log('Usuarios filtrados:', this.usuarios);  // Verifica qué usuarios están siendo filtrados
-      if (this.filtroRol === 'Todos') {
-        return this.usuarios;
-      }
-      return this.usuarios.filter(usuario => usuario.rol === this.filtroRol);
-    }
-  },
-  methods: {
-    async obtenerUsuarios() {
-  this.cargando = true;
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No se encontró token de autenticación');
-    }
+const pinia = useAppStore();
 
-    const response = await axios.get('http://localhost:3000/user', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+const filtroRol = ref('Todos');
+const busqueda = ref('');
+const cargando = ref(false);
+const usuarios = ref([]);
+const errorMessage = ref('');
+const headers = ref([
+  { text: 'Nombre', value: 'nombre' },
+  { text: 'Email', value: 'email' },
+  { text: 'Rol', value: 'rol' },
+]);
 
-    console.log('Datos de usuarios:', response.data); // Agrega este log
+const router = useRouter();
 
-    if (Array.isArray(response.data)) {
-      this.usuarios = response.data.map(usuario => ({
-        ...usuario,
-        rol: this.getRolByPermissionId(usuario.permission_type_id)
-      }));
-      this.mostrarMensaje('Usuarios cargados exitosamente', 'success');
-    } else {
-      throw new Error('La respuesta del servidor no es un array');
-    }
-  } catch (error) {
-    console.error('Error al obtener los usuarios:', error);
-    this.mostrarMensaje('Error al cargar los usuarios', 'error');
-  } finally {
-    this.cargando = false;
+const usuariosFiltrados = computed(() => {
+  let filtrados = usuarios.value;
+
+  if (filtroRol.value !== 'Todos') {
+    filtrados = filtrados.filter((usuario) => usuario.rol === filtroRol.value);
   }
-},
-    getRolByPermissionId(permissionId) {
-      const roles = {
-        1: 'Administrador',
-        2: 'Profesor',
-        3: 'Alumno'
-      };
-      return roles[permissionId] || 'Desconocido';
-    },
-    async guardarRol(usuario) {
-      try {
-        const permissionId = this.getPermissionIdByRol(usuario.rol);
-        const token = localStorage.getItem('token');
-        await axios.put(`http://localhost:3000/user/${usuario.id}/permission`, {
-          permission_type_id: permissionId
-        }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        this.mostrarMensaje(`Rol de ${usuario.username} actualizado a ${usuario.rol}`, 'success');
-      } catch (error) {
-        console.error('Error al guardar el rol:', error);
-        this.mostrarMensaje('Error al guardar el rol', 'error');
-      }
-    },
-    getPermissionIdByRol(rol) {
-      const permisos = {
-        'Administrador': 1,
-        'Profesor': 2,
-        'Alumno': 3
-      };
-      return permisos[rol] || 3;
-    },
-    volverAtras() {
-      this.$router.push("/main");
-    },
-    mostrarMensaje(texto, color) {
-      this.snackbarText = texto;
-      this.snackbarColor = color;
-      this.snackbar = true;
+
+  if (busqueda.value) {
+    filtrados = filtrados.filter((usuario) =>
+      usuario.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
+    );
+  }
+
+  return filtrados;
+});
+
+const cargarUsuarios = async () => {
+  cargando.value = true;
+  try {
+    const response = await communicationManager.getUser();
+    if (!response.ok) {
+      throw new Error('Error al cargar usuarios');
     }
-  },
-  mounted() {
-    this.obtenerUsuarios();
+
+    const data = await response.json();
+    usuarios.value = data; 
+  } catch (error) {
+    console.error('Error al obtener los usuarios:', error.message);
+    errorMessage.value = error.message;
+  } finally {
+    cargando.value = false;
   }
 };
+
+const volverAtras = () => {
+  router.push('/main');
+};
+
+onMounted(() => {
+  cargarUsuarios();
+});
 </script>
+
+<style scoped>
+</style>

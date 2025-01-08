@@ -3,15 +3,17 @@ import { defineStore } from 'pinia';
 export const useAppStore = defineStore('app', {
   state: () => ({
     user: {
-      name: '',
+      username: '',
       email: '',
+      permission: '',
     },
     token: '',
   }),
   actions: {
-    setUser(newName, newEmail) {
-      this.user.name = newName;
-      this.user.email = newEmail;
+    setUser(newUsername, newEmail, newPermission){
+      this.user.username = newUsername,
+      this.user.email = newEmail,
+      this.user.permission = newPermission
     },
 
     setToken(newToken) {
@@ -25,5 +27,6 @@ export const useAppStore = defineStore('app', {
         token: this.token,
       };
     },
+
   },
 });
