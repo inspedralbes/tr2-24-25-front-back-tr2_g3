@@ -16,7 +16,7 @@ const pool = mysql.createPool({
 // USER FUNCTIONS
 // Función para obtener los usuarios
 async function getUsers() {
-  const query = 'SELECT id, username, email FROM users';
+  const query = 'SELECT id, username, email, permission_type_id FROM users';
   const [rows] = await pool.query(query);
   return rows;
 }
