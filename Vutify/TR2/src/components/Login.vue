@@ -10,8 +10,26 @@
       <v-card-title class="text-center text-h5 primary--text">Iniciar Sesión</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
-          <v-text-field v-model="email" label="Correo electrónico" :rules="[rules.required, rules.email]" required type="email" outlined dense clearable></v-text-field>
-          <v-text-field v-model="password" label="Contraseña" :rules="[rules.required]" required type="password" outlined dense clearable></v-text-field>
+          <v-text-field 
+            v-model="email" 
+            label="Correo electrónico" 
+            :rules="[rules.required, rules.email]" 
+            required 
+            type="email" 
+            outlined 
+            dense 
+            clearable
+          ></v-text-field>
+          <v-text-field 
+            v-model="password" 
+            label="Contraseña" 
+            :rules="[rules.required]" 
+            required 
+            type="password" 
+            outlined 
+            dense 
+            clearable
+          ></v-text-field>
 
           <v-alert v-if="errorMessage" type="error" class="mt-4" dismissible>{{ errorMessage }}</v-alert>
 
@@ -27,9 +45,9 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
-import communicationManager from '../services/communicationManager';
+import communicationManager from '@/services/communicationManager';
 
-const pinia = useAppStore()
+const pinia = useAppStore();
 
 const email = ref('');
 const password = ref('');
@@ -46,34 +64,31 @@ const login = async () => {
   try {
     const response = await communicationManager.login(email.value, password.value);
 
-    if(!response.ok){
+    if (!response.ok) {
       errorMessage.value = 'Credenciales incorrectas';
-      return
+      return;
     }
 
-    const data = await response.json()
+    const data = await response.json();
     
+    console.log('Datos del usuario recibidos:', data); // Para depuración
+
+    // Ajusta aquí para acceder al campo correcto
     pinia.setToken(data.token);
-    pinia.setUser(data.userInfo.username, data.userInfo.email);
+    pinia.setUser(
+      data.userInfo.username, 
+      data.userInfo.email, 
+      data.permission // Cambiado a data.permission
+    );
     
+    console.log('Usuario guardado en Pinia:', pinia.user); // Para depuración
+
     router.push('/main');
 
   } catch (error) {
-    if(error.status)
     console.error('Error de login:', error.message);
     errorMessage.value = error.message;
   }
-  // try {
-  //   const success = await store.login(email.value, password.value); 
-  //   if (success) {
-  //     router.push('/main'); 
-  //   } else {
-  //     errorMessage.value = 'Credenciales incorrectas';
-  //   }
-  // } catch (error) {
-  //   console.error('Error de login:', error.message);
-  //   errorMessage.value = error.message;
-  // }
 };
 
 const goToRegister = () => {

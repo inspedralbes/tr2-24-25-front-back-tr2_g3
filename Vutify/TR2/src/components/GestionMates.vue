@@ -28,22 +28,35 @@
       </v-row>
 
       <v-data-table
+        v-if="isAdmin"
         :headers="headers"
         :items="usuariosFiltrados"
         :search="busqueda"
         :loading="cargando"
         class="elevation-1"
       >
-        <template v-slot:item.rol="{ item }">
+        <template v-slot:item.permission="{ item }">
           <v-select
-            v-model="item.rol"
-            :items="['Administrador', 'Profesor', 'Alumno']"
+            v-model="item.permission"
+            :items="rolesDisponibles.map((rol)=>rol.text)"
+            item-text="text"
+            item-value="value"
             @change="guardarRol(item)"
             dense
+            :disabled="item.email === user.email" 
           ></v-select>
         </template>
       </v-data-table>
 
+      <!-- Muestra un aviso si no es admin -->
+      <v-alert v-else-if="!isAdmin" type="warning" class="mt-4">
+        No tienes permisos para gestionar roles de usuarios.
+      </v-alert>
+
+      <!-- Muestra un mensaje de error si existe -->
+      <v-alert v-if="errorMessage" type="error" class="mt-4">
+        {{ errorMessage }}
+      </v-alert>
 
       <v-divider class="my-4"></v-divider>
 
@@ -58,10 +71,12 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
-import communicationManager from '../services/communicationManager';
-import { da } from 'vuetify/locale';
+import { storeToRefs } from 'pinia';
+import communicationManager from '@/services/communicationManager';
 
 const pinia = useAppStore();
+const { user } = storeToRefs(pinia);
+const router = useRouter();
 
 const filtroRol = ref('Todos');
 const busqueda = ref('');
@@ -69,23 +84,30 @@ const cargando = ref(false);
 const usuarios = ref([]);
 const errorMessage = ref('');
 const headers = ref([
-  { text: 'Nombre', value: 'nombre' },
+  { text: 'Nombre', value: 'username' },
   { text: 'Email', value: 'email' },
-  { text: 'Rol', value: 'rol' },
+  { text: 'Rol', value: 'permission' },
 ]);
 
-const router = useRouter();
+const isAdmin = computed(() => pinia.isAdmin);
+
+const rolesDisponibles = [
+  { text: 'Administrador', value: 'admin' }, // Asegúrate que estos valores coincidan con los del backend
+  { text: 'Profesor', value: 'professor' },
+  { text: 'Alumno', value: 'student' },
+];
 
 const usuariosFiltrados = computed(() => {
   let filtrados = usuarios.value;
 
   if (filtroRol.value !== 'Todos') {
-    filtrados = filtrados.filter((usuario) => usuario.rol === filtroRol.value);
+    const rolValue = rolesDisponibles.find(r => r.text === filtroRol.value)?.value;
+    filtrados = filtrados.filter((usuario) => usuario.permission === rolValue);
   }
 
   if (busqueda.value) {
     filtrados = filtrados.filter((usuario) =>
-      usuario.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
+      usuario.username.toLowerCase().includes(busqueda.value.toLowerCase())
     );
   }
 
@@ -99,9 +121,12 @@ const cargarUsuarios = async () => {
     if (!response.ok) {
       throw new Error('Error al cargar usuarios');
     }
-
     const data = await response.json();
-    usuarios.value = data; 
+    
+    console.log('Datos de usuarios recibidos:', data);
+    
+    usuarios.value = data; // Asegúrate que la estructura sea correcta.
+    
   } catch (error) {
     console.error('Error al obtener los usuarios:', error.message);
     errorMessage.value = error.message;
@@ -110,12 +135,22 @@ const cargarUsuarios = async () => {
   }
 };
 
+const guardarRol = async (item) => {
+  console.log('Cambio de rol para:', item.email, 'Nuevo rol:', item.permission);
+  
+  // Aquí iría la lógica para guardar el cambio de rol en el backend.
+};
+
 const volverAtras = () => {
   router.push('/main');
 };
 
 onMounted(() => {
-  cargarUsuarios();
+  console.log('Componente montado. Usuario actual:', user.value);
+  
+  if (isAdmin.value) {
+    cargarUsuarios();
+  }
 });
 </script>
 

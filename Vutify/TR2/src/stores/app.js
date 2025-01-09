@@ -5,28 +5,24 @@ export const useAppStore = defineStore('app', {
     user: {
       username: '',
       email: '',
-      permission: '',
+      permission: null, // Cambiado a null para manejar mejor los casos indefinidos
     },
     token: '',
   }),
   actions: {
-    setUser(newUsername, newEmail, newPermission){
-      this.user.username = newUsername,
-      this.user.email = newEmail,
-      this.user.permission = newPermission
+    setUser(newUsername, newEmail, newPermission) {
+      console.log('SetUser llamado con:', { newUsername, newEmail, newPermission });
+      this.user.username = newUsername;
+      this.user.email = newEmail;
+      this.user.permission = newPermission;
+      console.log('Estado del usuario después de setUser:', this.user);
     },
-
     setToken(newToken) {
       this.token = newToken;
     },
-
-    getUserData() {
-      return {
-        name: this.user.name,
-        email: this.user.email,
-        token: this.token,
-      };
-    },
-
+  },
+  getters: {
+    isAdmin: (state) => state.user.permission === 'admin', 
+    isLoggedIn: (state) => !!state.token,
   },
 });
