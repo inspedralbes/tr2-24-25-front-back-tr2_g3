@@ -108,6 +108,13 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`Usuario desconectado: ${socket.id}`);
     });
+
+    socket.on('bandera-verde-obtenida', (userName) => {
+        io.emit('bandera-verde-obtenida', userName);
+    });
+    socket.on('bandera-roja-obtenida', (userName) => {
+        io.emit('bandera-roja-obtenida', userName);
+    });
 });
 
 // Login de usuarios
