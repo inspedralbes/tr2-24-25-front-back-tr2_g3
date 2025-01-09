@@ -66,6 +66,7 @@ const communicationManager = {
  login,
  register,
  getUser,
+ getCode
 }
 
 export default communicationManager;

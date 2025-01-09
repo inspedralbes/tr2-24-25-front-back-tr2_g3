@@ -72,38 +72,30 @@
   import { useRouter } from "vue-router";
   import AOS from 'aos';
   import 'aos/dist/aos.css';
+  import communicationManager from '../services/communicationManager';
   
   const router = useRouter();
   const roomCode = ref(); 
-  const flagBearer = ref('Jugador1'); // Nombre del portador de la bandera
-  const teamAKills = ref(5); // Kills del equipo A
-  const teamBKills = ref(3); // Kills del equipo B
+  const flagBearer = ref('Jugador1'); 
+  const teamAKills = ref(5); 
+  const teamBKills = ref(3); 
   
-  onMounted(() => {
-    AOS.init({
-      duration: 1000,
-      once: true
-    });
-    CreateCode
-  });
-
   const CreateCode = async () => {
-
-    try {
+  try {
     const response = await communicationManager.getCode();
     if (!response.ok) {
       errorMessage.value = 'Error al registrar el usuario';
     }
 
-    const data = await response.json()
-
+    const data = await response.json();
     roomCode.value = data.code;
 
   } catch (error) {
     console.error('Error de registro:', error.message);
     errorMessage.value = error.message;
   }
-  }
+};
+
   
   const showStats = () => {
     // Lógica para mostrar estadísticas
@@ -113,6 +105,14 @@
   const goBack = () => {
     router.go(-1);
   };
+
+  onMounted(async () => {
+  AOS.init({
+    duration: 1000,
+    once: true
+  });
+  await CreateCode(); 
+});
   </script>
   
   <style scoped>
