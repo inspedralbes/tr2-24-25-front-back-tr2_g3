@@ -35,9 +35,9 @@
         :loading="cargando"
         class="elevation-1"
       >
-        <template v-slot:item.permission="{ item }">
+        <template #item.permission_type_id="{ item }">
           <v-select
-            v-model="item.permission"
+           
             :items="rolesDisponibles.map((rol)=>rol.text)"
             item-text="text"
             item-value="value"
@@ -96,6 +96,17 @@ const rolesDisponibles = [
   { text: 'Profesor', value: 'professor' },
   { text: 'Alumno', value: 'student' },
 ];
+
+function getRole(permissionTypeId) {
+  switch (permissionTypeId) {
+    case 1:
+      return 'Admin';
+    case 2:
+      return 'Professor';
+    default:
+      return 'Alumne';
+  }
+}
 
 const usuariosFiltrados = computed(() => {
   let filtrados = usuarios.value;
