@@ -3,9 +3,10 @@ import { defineStore } from 'pinia';
 export const useAppStore = defineStore('app', {
   state: () => ({
     user: {
+      id: null,
       username: '',
       email: '',
-      permission: null, // Cambiado a null para manejar mejor los casos indefinidos
+      permission: null,
     },
     token: '',
   }),

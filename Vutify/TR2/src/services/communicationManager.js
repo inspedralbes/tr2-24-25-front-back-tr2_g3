@@ -1,5 +1,5 @@
 import { useAppStore } from "@/stores/app";
-
+import { emitRoleChange } from '@/services/socketManager';
 
 const urlBase = 'http://catch-the-math.dam.inspedralbes.cat:29876'
 
@@ -32,6 +32,29 @@ async function register(username, email, password) {
     return response;
 }
 
+async function modifyPermission(userId, permissionTypeId) {
+    const pinia = useAppStore();
+    const response = await fetch(`${urlBase}/modify-permission`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': "application/json",
+            'Authorization': `Bearer ${pinia.token}`,
+        },
+        body: JSON.stringify({
+            user_id: userId,
+            permission_type_id: permissionTypeId
+        }),
+    });
+    
+    if (response.ok) {
+        // Emitir el cambio de rol a través del socket
+        emitRoleChange(userId, permissionTypeId);
+    }
+    
+    return response;
+}
+
 async function getUser () {
     const pinia = useAppStore();
     const response = await fetch(`${urlBase}/user`,{
@@ -40,7 +63,6 @@ async function getUser () {
             "Content-Type": "application/json",
             'Accept': "application/json",
             'Authorization': `Bearer ${pinia.token}`,
-            
         },
     });
     return response;
@@ -54,19 +76,17 @@ async function getCode () {
             "Content-Type": "application/json",
             'Accept': "application/json",
             'Authorization': `Bearer ${pinia.token}`,
-            
         },
     });
     return response;
 }
 
-
-
 const communicationManager = {
  login,
  register,
  getUser,
- getCode
+ getCode,
+ modifyPermission
 }
 
 export default communicationManager;
