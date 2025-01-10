@@ -59,6 +59,45 @@ const connectDB = async () => {
     }
 };
 
+const getStatistics = async (query) => {
+    try {
+        const client = await getClientDB();
+
+        // Usa la base de datos especificada
+        const database = client.db(process.env.MONGO_DB);
+        const collection = database.collection('statistics');
+
+        // Realizar la consulta
+        const results = await collection.find(query).toArray();
+
+        console.log("Resultados obtenidos:", results.length);
+        return results;
+    } catch (error) {
+        console.error("Error al obtener datos:", error);
+        throw error;
+    } finally {
+        await client.close();
+    }
+};
+
+app.get('/getStats', async (req, res) => {
+    const query = { "date.year": 2025 };
+
+    try {
+        const stats = await getStats(query); // Usa directamente await
+        res.json(stats); // Enviar la respuesta como JSON
+    } catch (error) {
+        console.error("Error al obtener estadísticas:", error);
+        res.status(500).json({ error: "Error al obtener estadísticas" });
+    }
+});
+
+
+// Rutas básicas
+app.get('/', (req, res) => {
+    res.json({ message: 'Servidor funcionando correctamente' });
+});
+
 // Rutas básicas
 app.get('/', (req, res) => {
     res.json({ message: 'Servidor funcionando correctamente' });
