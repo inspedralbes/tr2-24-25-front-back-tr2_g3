@@ -5,7 +5,7 @@ const generateAdditionQuestions = (numQuestions) => {
     const num1 = Math.floor(Math.random() * 50) + 1;
     const num2 = Math.floor(Math.random() * 50) + 1;
     const correctAnswer = num1 + num2;
-    const questionText = `¿Cuánto es ${num1} + ${num2}?`;
+    const questionText = `¿${num1} + ${num2}?`;
 
     const correctOption = Math.floor(Math.random() * 4) + 1;
     const options = [];
@@ -43,7 +43,7 @@ const generateSubtractionQuestions = (numQuestions) => {
     const num1 = Math.floor(Math.random() * 50) + 1;
     const num2 = Math.floor(Math.random() * 50) + 1;
     const correctAnswer = num1 - num2;
-    const questionText = `¿Cuánto es ${num1} - ${num2}?`;
+    const questionText = `¿${num1} - ${num2}?`;
 
     const correctOption = Math.floor(Math.random() * 4) + 1;
     const options = [];
@@ -81,7 +81,7 @@ const generateMultiplicationQuestions = (numQuestions) => {
     const num1 = Math.floor(Math.random() * 12) + 1;
     const num2 = Math.floor(Math.random() * 12) + 1;
     const correctAnswer = num1 * num2;
-    const questionText = `¿Cuánto es ${num1} × ${num2}?`;
+    const questionText = `¿${num1} × ${num2}?`;
 
     const correctOption = Math.floor(Math.random() * 4) + 1;
     const options = [];
@@ -120,7 +120,7 @@ const generateDivisionQuestions = (numQuestions) => {
     let num2 = Math.floor(Math.random() * 12) + 1;
     num1 = num1 * num2; // Asegurar divisiones exactas
     const correctAnswer = num1 / num2;
-    const questionText = `¿Cuánto es ${num1} ÷ ${num2}?`;
+    const questionText = `¿${num1} ÷ ${num2}?`;
 
     const correctOption = Math.floor(Math.random() * 4) + 1;
     const options = [];

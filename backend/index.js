@@ -84,7 +84,7 @@ app.get('/getStats', async (req, res) => {
     const query = { "date.year": 2025 };
 
     try {
-        const stats = await getStats(query); // Usa directamente await
+        const stats = await getStatistics(query); // Usa directamente await
         res.json(stats); // Enviar la respuesta como JSON
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
@@ -359,7 +359,7 @@ app.get('/create-code', verifyTokenTeacher, async (req, res) => {
     res.status(200).json({ code });
 });
 
-app.post('/get-code', async (req, res) => {
+app.get('/get-code', async (req, res) => {
     res.status(200).json({ code });
 });
 
