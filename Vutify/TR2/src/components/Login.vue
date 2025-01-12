@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAppStore } from '@/stores/app';
 import communicationManager from '@/services/communicationManager';
@@ -59,6 +59,14 @@ const rules = {
   required: (value) => !!value || 'Este campo es obligatorio',
   email: (value) => /.+@.+\..+/.test(value) || 'Introduce un correo electrónico válido',
 };
+
+// Verificar si ya está autenticado y redirigir si es el caso
+onMounted(() => {
+  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
+  if (isAuthenticated) {
+    router.push('/main'); // Redirigir a la página principal si ya está autenticado
+  }
+});
 
 const login = async () => {
   try {
@@ -83,7 +91,10 @@ const login = async () => {
     
     console.log('Usuario guardado en Pinia:', pinia.user); // Para depuración
 
-    router.push('/main');
+    // Guardar estado de autenticación en sessionStorage
+    sessionStorage.setItem('isAuthenticated', 'true');
+
+    router.push('/main'); // Redirigir a la página principal
 
   } catch (error) {
     console.error('Error de login:', error.message);
