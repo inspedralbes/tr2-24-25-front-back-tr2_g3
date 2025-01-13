@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
 import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
+import { exec } from 'child_process';
 
 dotenv.config(); // Carga las variables de entorno de .env
 
@@ -130,7 +131,7 @@ const getStatistics = async (query) => {
     }
 };
 
-function getQuery( year, month, day, user_id, lastWeek ) {
+function getQuery(year, month, day, user_id, lastWeek) {
     const query = {};
 
     // Si lastWeek es true, construimos la consulta para la última semana
@@ -171,6 +172,45 @@ app.get('/getStats', async (req, res) => {
         const queryLastWeek = getQuery(year, month, day, user_id, lastWeek);
         const stats = await getStatistics(queryLastWeek); // Usa directamente await
         res.json(stats); // Enviar la respuesta como JSON
+    } catch (error) {
+        console.error("Error al obtener estadísticas:", error);
+        res.status(500).json({ error: "Error al obtener estadísticas" });
+    }
+});
+
+app.get('/createStats', async (req, res) => {
+
+    const { year, month, day, user_id, lastWeek } = req.body;
+
+    try {
+        const queryLastWeek = getQuery(year, month, day, user_id, lastWeek);
+        const data = await getStatistics(queryLastWeek); // Usa directamente await
+        res.json(data); // Enviar la respuesta como JSON
+
+        // Nombre del archivo de la imagen
+        const imageName = 'grafica_personalizada.png';
+
+        // Convertir los datos a cadenas JSON
+        const dataStr = JSON.stringify(data);
+
+        // Escapar las comillas dobles en las cadenas JSON para la línea de comandos
+        const escapedDataStr = dataStr.replace(/"/g, '\\"');
+        const escapedImageName = imageName.replace(/"/g, '\\"');
+
+        // Ejecutar el script de Python pasando los datos y el nombre de la imagen como argumento
+        exec(`py grafica.py "${escapedDataStr}" "${escapedImageName}"`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Error ejecutando el script: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.error(`stderr: ${stderr}`);
+                return;
+            }
+            console.log(`stdout: ${stdout}`);
+            res.json(stdout);
+        });
+
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
         res.status(500).json({ error: "Error al obtener estadísticas" });
@@ -291,6 +331,7 @@ app.post('/auth/login', async (req, res) => {
         res.json({
             message: 'Login exitoso',
             userInfo: {
+                id: user.id,
                 username: user.username,
                 email: user.email
             },
