@@ -70,14 +70,14 @@ async function getUser () {
 
 async function getCode () {
     const pinia = useAppStore();
-    const response = await fetch(`${urlBase}/create-code`,{
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            'Accept': "application/json",
-            'Authorization': `Bearer ${pinia.token}`,
-        },
-    });
+    // const response = await fetch(`${urlBase}/create-code`,{
+    //     method: "GET",
+    //     headers: {
+    //         "Content-Type": "application/json",
+    //         'Accept': "application/json",
+    //         'Authorization': `Bearer ${pinia.token}`,
+    //     },
+    // });
     return response;
 }
 

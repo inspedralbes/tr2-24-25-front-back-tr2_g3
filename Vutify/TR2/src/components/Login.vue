@@ -1,24 +1,32 @@
 <template>
-  <v-container fluid class="d-flex justify-center align-center" style="height: 100vh; margin: 0; padding: 0;">
+  <v-container 
+    fluid 
+    class="d-flex justify-center align-center login-container"
+  >
     <v-card 
-      class="pa-5" 
-      width="100%" 
-      max-width="400" 
-      elevation="8" 
-      outlined
+      class="pa-6 login-card" 
+      max-width="480px" 
+      elevation="12"
     >
-      <v-card-title class="text-center text-h5 primary--text">Iniciar Sesión</v-card-title>
+      <v-card-title class="text-center text-h4 primary--text font-weight-bold">
+        Bienvenido de Nuevo
+      </v-card-title>
+      <v-card-subtitle class="text-center grey--text text-subtitle-1 mb-6">
+        Inicia sesión para acceder a tu cuenta
+      </v-card-subtitle>
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-text-field 
             v-model="email" 
-            label="Correo electrónico" 
+            label="Correo Electrónico" 
             :rules="[rules.required, rules.email]" 
             required 
             type="email" 
             outlined 
-            dense 
             clearable
+            color="primary"
+            dense
+            class="mb-4"
           ></v-text-field>
           <v-text-field 
             v-model="password" 
@@ -27,14 +35,40 @@
             required 
             type="password" 
             outlined 
-            dense 
             clearable
+            color="primary"
+            dense
+            class="mb-4"
           ></v-text-field>
 
-          <v-alert v-if="errorMessage" type="error" class="mt-4" dismissible>{{ errorMessage }}</v-alert>
+          <v-alert 
+            v-if="errorMessage" 
+            type="error" 
+            class="mt-3" 
+            border="top"
+          >
+            {{ errorMessage }}
+          </v-alert>
 
-          <v-btn block color="primary" class="mt-4 rounded-lg" @click="login" :disabled="!valid">Iniciar Sesión</v-btn>
-          <v-btn block class="mt-3" color="secondary" @click="goToRegister">¿No tienes cuenta? Regístrate</v-btn>
+          <v-btn 
+            block 
+            color="primary" 
+            class="mt-4 rounded-pill text-h6 py-3" 
+            :disabled="!valid" 
+            @click="login" 
+            elevation="2"
+          >
+            Iniciar Sesión
+          </v-btn>
+          <v-btn 
+            block 
+            color="secondary" 
+            class="mt-3 rounded-pill text-h6 py-3" 
+            @click="goToRegister" 
+            elevation="1"
+          >
+            ¿No tienes cuenta? Regístrate
+          </v-btn>
         </v-form>
       </v-card-text>
     </v-card>
@@ -60,11 +94,10 @@ const rules = {
   email: (value) => /.+@.+\..+/.test(value) || 'Introduce un correo electrónico válido',
 };
 
-// Verificar si ya está autenticado y redirigir si es el caso
 onMounted(() => {
   const isAuthenticated = pinia.token === '';
   if (!isAuthenticated) {
-    router.push('/main'); // Redirigir a la página principal si ya está autenticado
+    router.push('/main');
   }
 });
 
@@ -78,26 +111,12 @@ const login = async () => {
     }
 
     const data = await response.json();
-    
-    console.log('Datos del usuario recibidos:', data); // Para depuración
 
-    // Ajusta aquí para acceder al campo correcto
     pinia.setToken(data.token);
-    pinia.setUser(
-      data.userInfo.username, 
-      data.userInfo.email, 
-      data.permission // Cambiado a data.permission
-    );
-    
-    console.log('Usuario guardado en Pinia:', pinia.user); // Para depuración
-
-    // Guardar estado de autenticación en sessionStorage
+    pinia.setUser(data.userInfo.username, data.userInfo.email, data.permission);
     sessionStorage.setItem('isAuthenticated', 'true');
-
-    router.push('/main'); // Redirigir a la página principal
-
+    router.push('/main');
   } catch (error) {
-    console.error('Error de login:', error.message);
     errorMessage.value = error.message;
   }
 };
@@ -108,28 +127,82 @@ const goToRegister = () => {
 </script>
 
 <style scoped>
-.v-container {
-  background-color: #f5f5f5;
+/* Fondo negro elegante */
+.login-container {
+  background: #121212; /* Fondo negro puro */
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
 }
 
-.v-card {
-  border-radius: 16px;
+/* Tarjeta estilizada en tonos oscuros */
+.login-card {
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5); /* Sombra más intensa */
+  background: #1e1e1e; /* Gris oscuro */
 }
 
+/* Colores y tipografía mejorados */
 .primary--text {
-  color: #1976d2;
+  color: #90caf9; /* Azul claro */
 }
 
+.grey--text {
+  color: #b0bec5; /* Gris claro */
+}
+
+/* Botones más grandes y elegantes */
 .v-btn {
-  font-weight: 500;
+  text-transform: none;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 12px 16px;
 }
 
+.v-btn[color="primary"] {
+  background-color: #2196f3; /* Azul brillante */
+  color: white;
+}
+
+.v-btn[color="secondary"] {
+  background-color: #f44336; /* Rojo brillante */
+  color: white;
+}
+
+/* Alertas refinadas */
 .v-alert {
-  font-weight: 400;
-  font-size: 14px;
+  font-size: 16px;
+  border-color: #ff6f61;
+  color: #ff6f61;
+  background: #2c2c2c; /* Fondo oscuro */
+}
+
+/* Campos de texto accesibles y más grandes */
+.v-text-field {
+  font-size: 18px;
+  color: white; /* Texto blanco */
 }
 
 .v-text-field input {
+  color: white; /* Texto blanco */
+  font-size: 18px;
+}
+
+.v-text-field label {
   font-size: 16px;
+  color: #b0bec5; /* Gris claro */
+}
+
+.v-card-title,
+.v-card-subtitle {
+  font-family: 'Roboto', sans-serif;
+}
+
+.v-card-title {
+  font-size: 24px;
+}
+
+.v-card-subtitle {
+  font-size: 18px;
 }
 </style>
