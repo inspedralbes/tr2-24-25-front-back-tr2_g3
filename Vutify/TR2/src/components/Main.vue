@@ -77,47 +77,44 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { onMounted } from 'vue';
 import { useRouter } from "vue-router";
 import imageSrc from "@/assets/images/imagen.png";
+import { useAppStore } from '@/stores/app';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
-export default {
-  name: "MathGameLanding",
-  setup() {
-    const router = useRouter();
+const router = useRouter();
 
-    // Inicializar AOS para animaciones
-    AOS.init({
-      duration: 1000,
-      once: true
-    });
+const GestionMates = () => {
+  router.push("/GestionMates");
+};
 
-    const GestionMates = () => {
-      router.push("/GestionMates");
-    };
+const CrearSala = () => {
+  router.push("/CrearSala");
+};
 
-    const CrearSala = () => {
-      router.push("/CrearSala");
-    };
+const downloadImage = () => {
+  const link = document.createElement('a');
+  link.href = imageSrc;
+  link.download = 'MathGame.png';
+  link.click();
+};
 
-    const downloadImage = () => {
-      const link = document.createElement('a');
-      link.href = imageSrc;
-      link.download = 'MathGame.png';
-      link.click();
-    };
-
-    return {
-      GestionMates,
-      CrearSala,
-      downloadImage,
-      imageSrc
-    };
+onMounted(() => {
+  const pinia = useAppStore();
+  if (pinia.token === '') {
+    router.push("/");
   }
-}
+  AOS.init({
+    duration: 1000,
+    once: true
+  });
+});
 </script>
+
+
 
 <style scoped>
 .cosmic-background {

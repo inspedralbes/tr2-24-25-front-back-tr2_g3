@@ -62,8 +62,8 @@ const rules = {
 
 // Verificar si ya está autenticado y redirigir si es el caso
 onMounted(() => {
-  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-  if (isAuthenticated) {
+  const isAuthenticated = pinia.token === '';
+  if (!isAuthenticated) {
     router.push('/main'); // Redirigir a la página principal si ya está autenticado
   }
 });

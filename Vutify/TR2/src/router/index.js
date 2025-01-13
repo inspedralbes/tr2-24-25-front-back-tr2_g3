@@ -20,17 +20,6 @@ const router = createRouter({
 });
 
 
-router.beforeEach((to, from, next) => {
-  const isAuthenticated = sessionStorage.getItem('isAuthenticated') === 'true';
-
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'Login' }); // Redirigir a la página de login
-  } else {
-    next(); // Continuar con la navegación
-  }
-});
-
-
 router.isReady().then(() => {
   sessionStorage.removeItem('vuetify:dynamic-reload');
 });
