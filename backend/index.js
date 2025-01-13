@@ -41,6 +41,56 @@ async function getClientDB() {
     }
 }
 
+function generateOperationSummary() {
+    const operations = ['addition', 'subtraction', 'multiplication', 'division'];
+    const summary = {};
+    for (const operation of operations) {
+        const totalAttempts = Math.floor(Math.random() * 300) + 1; // Valores entre 1 y 300
+        const correctAnswers = Math.floor(Math.random() * totalAttempts);
+        summary[operation] = {
+            total_attempts: totalAttempts,
+            correct_answers: correctAnswers,
+        };
+    }
+    return summary;
+}
+
+async function insertUserStatistics() {
+    try {
+        const client = await getClientDB();
+        const database = client.db(process.env.MONGO_DB);
+        const collection = database.collection('user_statistics');
+
+        const startDate = new Date(2025, 0, 1); // 1 de enero de 2025
+        const endDate = new Date(2025, 0, 31); // 31 de enero de 2025
+
+        const documents = [];
+        let currentDate = startDate;
+        console.log('insertando datos');
+        while (currentDate <= endDate) {
+            documents.push({
+                date: {
+                    year: currentDate.getFullYear(),
+                    month: currentDate.getMonth() + 1, // Enero es el mes 0
+                    day: currentDate.getDate(),
+                },
+                operation_summary: generateOperationSummary(),
+                type: "user",
+                user_id: 40,
+            });
+            currentDate.setDate(currentDate.getDate() + 1); // Avanzar un día
+        }
+        console.log('datos insertados p2');
+
+        const result = await collection.insertMany(documents);
+        console.log(`${result.insertedCount} documentos insertados con éxito.`);
+    } catch (error) {
+        console.error("Error al insertar datos:", error);
+    } finally {
+        await client.close();
+    }
+}
+
 const connectDB = async () => {
     try {
         const client = await getClientDB();
@@ -65,7 +115,7 @@ const getStatistics = async (query) => {
 
         // Usa la base de datos especificada
         const database = client.db(process.env.MONGO_DB);
-        const collection = database.collection('statistics');
+        const collection = database.collection('user_statistics');
 
         // Realizar la consulta
         const results = await collection.find(query).toArray();
@@ -80,11 +130,46 @@ const getStatistics = async (query) => {
     }
 };
 
+function getQuery( year, month, day, user_id, lastWeek ) {
+    const query = {};
+
+    // Si lastWeek es true, construimos la consulta para la última semana
+    if (lastWeek) {
+        const today = new Date();
+        const lastWeekDate = new Date(today);
+        lastWeekDate.setDate(today.getDate() - 7);
+
+        const todayYear = today.getFullYear();
+        const todayMonth = today.getMonth() + 1;
+        const todayDay = today.getDate();
+
+        const lastWeekYear = lastWeekDate.getFullYear();
+        const lastWeekMonth = lastWeekDate.getMonth() + 1;
+        const lastWeekDay = lastWeekDate.getDate();
+
+        // Agregamos la condición de la última semana
+        query["date.year"] = { "$gte": lastWeekYear, "$lte": todayYear };
+        query["date.month"] = { "$gte": lastWeekMonth, "$lte": todayMonth };
+        query["date.day"] = { "$gte": lastWeekDay, "$lt": todayDay };  // Excluye el día actual
+    } else {
+        // Si no es para la última semana, añadimos año, mes y día específicos
+        if (year) query["date.year"] = year;
+        if (month) query["date.month"] = month;
+        if (day) query["date.day"] = day;
+    }
+
+    if (user_id) query["user_id"] = user_id;
+
+    return query;
+}
+
 app.get('/getStats', async (req, res) => {
-    const query = { "date.year": 2025 };
+
+    const { year, month, day, user_id, lastWeek } = req.body;
 
     try {
-        const stats = await getStatistics(query); // Usa directamente await
+        const queryLastWeek = getQuery(year, month, day, user_id, lastWeek);
+        const stats = await getStatistics(queryLastWeek); // Usa directamente await
         res.json(stats); // Enviar la respuesta como JSON
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
@@ -346,7 +431,7 @@ app.get('/group/assigned', verifyTokenTeacher, async (req, res) => {
 
 app.get('/question', async (req, res) => {
     const question = getRandomQuestion();
-    res.status(200).json({...question});
+    res.status(200).json({ ...question });
 });
 
 let code = {};

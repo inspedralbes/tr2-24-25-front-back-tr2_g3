@@ -54,6 +54,7 @@ Authenticates a user and returns a JWT.
 {
     "message": "Inicio de sesión exitoso",
     "userInfo": {
+        "id": INT
         "username": "usr",
         "email": "usr@example.com"
     },
