@@ -9,6 +9,7 @@ import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
 import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
 import { exec } from 'child_process';
+import { spawn } from 'child_process';
 
 dotenv.config(); // Carga las variables de entorno de .env
 
@@ -121,7 +122,6 @@ const getStatistics = async (query) => {
         // Realizar la consulta
         const results = await collection.find(query).toArray();
 
-        console.log("Resultados obtenidos:", results.length);
         return results;
     } catch (error) {
         console.error("Error al obtener datos:", error);
@@ -170,8 +170,36 @@ app.get('/getStats', async (req, res) => {
 
     try {
         const queryLastWeek = getQuery(year, month, day, user_id, lastWeek);
-        const stats = await getStatistics(queryLastWeek); // Usa directamente await
-        res.json(stats); // Enviar la respuesta como JSON
+        const data = await getStatistics(queryLastWeek); // Usa directamente await
+        const groupedData = data.reduce((acc, current) => {
+            // Crear una clave única para la fecha
+            const dateKey = `${current.date.year}-${current.date.month}-${current.date.day}`;
+
+            // Si la fecha no está en el acumulador, inicialízala
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    date: current.date,
+                    operation_summary: {
+                        addition: { total_attempts: 0, correct_answers: 0 },
+                        subtraction: { total_attempts: 0, correct_answers: 0 },
+                        multiplication: { total_attempts: 0, correct_answers: 0 },
+                        division: { total_attempts: 0, correct_answers: 0 }
+                    }
+                };
+            }
+
+            // Sumar los valores de operation_summary
+            Object.keys(current.operation_summary).forEach(operation => {
+                acc[dateKey].operation_summary[operation].total_attempts += current.operation_summary[operation].total_attempts;
+                acc[dateKey].operation_summary[operation].correct_answers += current.operation_summary[operation].correct_answers;
+            });
+
+            return acc;
+        }, {});
+
+        // Convertir el resultado a un array
+        const total_data = Object.values(groupedData);
+        res.json(total_data); // Enviar la respuesta como JSON
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
         res.status(500).json({ error: "Error al obtener estadísticas" });
@@ -179,38 +207,55 @@ app.get('/getStats', async (req, res) => {
 });
 
 app.get('/createStats', async (req, res) => {
-
     const { year, month, day, user_id, lastWeek } = req.body;
 
     try {
         const queryLastWeek = getQuery(year, month, day, user_id, lastWeek);
-        const data = await getStatistics(queryLastWeek); // Usa directamente await
-        res.json(data); // Enviar la respuesta como JSON
+        const data = await getStatistics(queryLastWeek);
 
-        // Nombre del archivo de la imagen
+        const groupedData = data.reduce((acc, current) => {
+            const dateKey = `${current.date.year}-${current.date.month}-${current.date.day}`;
+
+            if (!acc[dateKey]) {
+                acc[dateKey] = {
+                    date: current.date,
+                    operation_summary: {
+                        addition: { total_attempts: 0, correct_answers: 0 },
+                        subtraction: { total_attempts: 0, correct_answers: 0 },
+                        multiplication: { total_attempts: 0, correct_answers: 0 },
+                        division: { total_attempts: 0, correct_answers: 0 }
+                    }
+                };
+            }
+
+            Object.keys(current.operation_summary).forEach(operation => {
+                acc[dateKey].operation_summary[operation].total_attempts += current.operation_summary[operation].total_attempts;
+                acc[dateKey].operation_summary[operation].correct_answers += current.operation_summary[operation].correct_answers;
+            });
+
+            return acc;
+        }, {});
+
+        const total_data = Object.values(groupedData);
+
         const imageName = 'grafica_personalizada.png';
+        const pythonProcess = spawn('py', ['grafica.py', JSON.stringify(total_data), imageName]);
 
-        // Convertir los datos a cadenas JSON
-        const dataStr = JSON.stringify(data);
-
-        // Escapar las comillas dobles en las cadenas JSON para la línea de comandos
-        const escapedDataStr = dataStr.replace(/"/g, '\\"');
-        const escapedImageName = imageName.replace(/"/g, '\\"');
-
-        // Ejecutar el script de Python pasando los datos y el nombre de la imagen como argumento
-        exec(`py grafica.py "${escapedDataStr}" "${escapedImageName}"`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Error ejecutando el script: ${error.message}`);
-                return;
-            }
-            if (stderr) {
-                console.error(`stderr: ${stderr}`);
-                return;
-            }
-            console.log(`stdout: ${stdout}`);
-            res.json(stdout);
+        pythonProcess.stdout.on('data', (data) => {
+            console.log(`Python stdout: ${data}`);
         });
 
+        pythonProcess.stderr.on('data', (data) => {
+            console.error(`Python stderr: ${data}`);
+        });
+
+        pythonProcess.on('close', (code) => {
+            if (code === 0) {
+                res.json({ success: true, message: 'Gráfico generado correctamente.', imageName });
+            } else {
+                res.status(500).json({ error: `El script Python terminó con código ${code}` });
+            }
+        });
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
         res.status(500).json({ error: "Error al obtener estadísticas" });
