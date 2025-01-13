@@ -33,19 +33,17 @@
                   src="@/assets/images/BanderaVerde.png"
                   height="200" 
                   width="200" 
-              
                   class="team-icon character-animation"
                 ></v-img>
               </div>
             </div>
             <div class="team-score">
               <div class="character-container">
-                <p class="score glow-text pulsing">{{flagBearerA  }}</p>
+                <p class="score glow-text pulsing">{{ flagBearerA }}</p>
                 <v-img
                   src="@/assets/images/banderaRoja.png"
                   height="200" 
                   width="200" 
-              
                   class="team-icon character-animation"
                 ></v-img>
               </div>
@@ -58,12 +56,16 @@
             <div class="team-score">
               <div class="character-container">
                 <v-img
-                  src="@/assets/images/PersonajeVerde.png"
-                  height="200" 
-                  width="200" 
-                 
-                  class="team-icon character-animation"
-                ></v-img>
+  src="@/assets/images/PersonajeVerde.png"
+  height="200" 
+  width="200" 
+  class="team-icon character-animation"
+  :class="{ 
+    'winning-animation': winningTeam === 'team-a',
+    'losing-animation': winningTeam !== 'team-a' && winningTeam !== null
+  }"
+></v-img>
+
               </div>
               <h3 class="team-name glow-text">Equipo A</h3>
               <p class="score glow-text pulsing">{{ teamAKills }}</p>
@@ -71,17 +73,25 @@
             <div class="team-score">
               <div class="character-container">
                 <v-img
-                  src="@/assets/images/PersonajeRojoActualiazdooo.png"
-                  height="200" 
-                  width="200" 
-                
-                  class="team-icon character-animation"
-                ></v-img>
+  src="@/assets/images/PersonajeRojoActualiazdooo.png"
+  height="200" 
+  width="200" 
+  class="team-icon character-animation"
+  :class="{ 
+    'winning-animation': winningTeam === 'team-b',
+    'losing-animation': winningTeam !== 'team-b' && winningTeam !== null
+  }"
+></v-img>
               </div>
               <h3 class="team-name glow-text">Equipo B</h3>
               <p class="score glow-text pulsing">{{ teamBKills }}</p>
             </div>
           </div>
+        </v-card-text>
+
+        <!-- Gráfico de muertes -->
+        <v-card-text class="text-center py-4">
+          <canvas id="killsChart" width="400" height="400"></canvas>
         </v-card-text>
 
         <v-card-actions class="justify-center pb-4">
@@ -100,22 +110,30 @@
     </v-container>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from "vue-router";
 import { io } from 'socket.io-client';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { Chart } from 'chart.js';
 import communicationManager from '../services/communicationManager';
+import { useAppStore } from '@/stores/app';
 
 // Variables reactivas
 const router = useRouter();
 const roomCode = ref();
 const flagBearerA = ref('Base');  // Nombre por defecto para la bandera A
 const flagBearerB = ref('Base');  // Nombre por defecto para la bandera B
-const teamAKills = ref(0); 
-const teamBKills = ref(0);
+const teamAKills = ref(3); 
+const teamBKills = ref(2);
+
+// Computed para determinar el equipo ganador
+const winningTeam = computed(() => {
+  if (teamAKills.value > teamBKills.value) return 'team-a';
+  if (teamBKills.value > teamAKills.value) return 'team-b';
+  return null; // Empate
+});
 
 // Conectar al servidor WebSocket
 const socket = io('http://localhost:3000'); 
@@ -144,21 +162,60 @@ const goBack = () => {
   router.go(-1);
 };
 
+// Crear el gráfico de muertes
+let killsChart = null;
+
+const createChart = () => {
+  const ctx = document.getElementById('killsChart').getContext('2d');
+  killsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Equipo A', 'Equipo B'],
+      datasets: [{
+        label: 'Muertes',
+        data: [teamAKills.value, teamBKills.value],
+        backgroundColor: ['rgba(0, 123, 255, 0.5)', 'rgba(255, 99, 132, 0.5)'],
+        borderColor: ['rgba(0, 123, 255, 1)', 'rgba(255, 99, 132, 1)'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+};
+
+// Actualizar el gráfico cuando cambien las muertes
+const updateChart = () => {
+  if (killsChart) {
+    killsChart.data.datasets[0].data = [teamAKills.value, teamBKills.value];
+    killsChart.update();
+  }
+};
+
+// Escuchar los eventos de WebSocket
 onMounted(async () => {
+  const pinia = useAppStore();
+  if (pinia.token === '') {
+    router.push("/");
+  }
   AOS.init({
     duration: 1000,
     once: true
   });
 
   await CreateCode();
+  createChart();  // Inicializa el gráfico al montar el componente
 
   // Escuchar evento de estadísticas de equipo
   socket.on('team-kills-rojo', (data) => {
-    console.log('Datos recibidos:', data);
     teamAKills.value = data.teamA || 0; 
   });
   socket.on('team-kills-verde', (data) => {
-    console.log('Datos recibidos:', data);
     teamBKills.value = data.teamB || 0; 
   });
 
@@ -172,32 +229,56 @@ onMounted(async () => {
   });
 });
 
+// Actualizar el gráfico cada vez que cambian las muertes
+watch([teamAKills, teamBKills], updateChart);
+
 onUnmounted(() => {
   socket.disconnect();
 });
 </script>
 
+
+
 <style scoped>
 /* Fondo y superposiciones */
 .space-background {
-  background: linear-gradient(135deg, #00bcd4, #8e24aa);
+  background: #7B4D91;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  animation: backgroundAnimation 15s ease-in-out infinite;
+  animation: backgroundAnimation 10s ease-in-out infinite;
+}
+.accelerated-animation {
+  animation-duration: 0.5s !important; /* Acelera la animación */
 }
 
-@keyframes backgroundAnimation {
-  0% {
-    background: linear-gradient(135deg, #00bcd4, #8e24aa);
+#killsChart {
+  max-width: 90%;
+  margin: 0 auto;
+  display: block;
+}
+
+.winning-animation {
+  animation-duration: 0.5s !important; /* Acelera la animación */
+  animation: glow 2s ease-in-out infinite, float 2s ease-in-out infinite;
+  transform: scale(1.5); /* Incrementar el tamaño */
+  z-index: 10; /* Asegurarse de que el personaje destaque */
+}
+
+.losing-animation {
+  opacity: 0.5; /* Hacer más tenue al perdedor */
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.8), 0 0 30px rgba(255, 255, 0, 0.6);
   }
   50% {
-    background: linear-gradient(135deg, #3f51b5, #e91e63);
-  }
-  100% {
-    background: linear-gradient(135deg, #00bcd4, #8e24aa);
+    box-shadow: 0 0 40px rgba(255, 255, 0, 1), 0 0 60px rgba(255, 255, 0, 0.8);
   }
 }
+
 
 /* Ajustes del contenedor */
 .v-container {
@@ -208,32 +289,33 @@ onUnmounted(() => {
 
 /* Tarjeta */
 .game-card {
-  transition: all 0.5s ease;
-  border-radius: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  max-width: 90vw; 
+  transition: all 0.4s ease;
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+  max-width: 90vw;
   width: 30vw;
-  height: 95vh;
+  height: 90vh;
 }
 .game-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+  transform: translateY(-8px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* Códigos de sala */
 .code-container {
-  height: 150px;
-  background: rgba(0,0,0,0.3);
+  height: 160px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
 }
 
 .code-text {
-  font-size: 6rem;
+  font-size: 5.5rem;
   font-weight: bold;
   color: #fff;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5), 0 0 20px rgba(255,255,255,0.7);
-  letter-spacing: 20px; /* Aumenta el espaciado entre caracteres */
-  margin-bottom: 50px; /* Aumenta el espacio debajo del código */
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 18px rgba(255, 255, 255, 0.8);
+  letter-spacing: 15px;
+  margin-bottom: 30px;
 }
 
 /* Ajustes de las banderas */
@@ -241,90 +323,91 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 50px; /* Espacio entre las banderas */
+  gap: 40px;
 }
 
 .flag-detail {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px; /* Espacio entre texto y bandera */
+  gap: 15px;
 }
 
 .flag-image {
-  max-height: 1000px; /* Aumenta el tamaño de la bandera */
+  max-height: 300px;
+  width: auto;
 }
 
 .flag-bearer-text {
-  font-size: 1.5rem;
-  letter-spacing: 5px;
-  margin-bottom: 15px; /* Aumenta el espacio debajo del texto */
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
 }
 
 /* Animaciones */
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
 
 .character-container {
-  perspective: 1000px;
+  perspective: 900px;
   transform-style: preserve-3d;
 }
 
 .character-animation {
-  animation: character-idle 4s ease-in-out infinite;
-  transition: all 0.3s ease;
+  animation: character-idle 3s ease-in-out infinite;
+  transition: all 0.2s ease;
 }
 
 .character-animation:hover {
-  animation: character-hover 1s ease-in-out infinite;
+  animation: character-hover 1.5s ease-in-out infinite;
 }
 
 /* Brillo de texto */
 .glow-text {
-  text-shadow: 0 0 15px rgba(255,255,255,0.9), 0 0 25px rgba(0,255,255,0.7), 0 0 40px rgba(0,255,255,0.5);
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6), 0 0 50px rgba(0, 255, 255, 0.4);
 }
 
 /* Botones */
 .stats-btn {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 25px;
+  right: 25px;
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .stats-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .action-btn {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  position: fixed;  /* Mantener el botón fijo en la pantalla */    
+  bottom: 10px;
 }
 
 .action-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 14px 25px rgba(0, 0, 0, 0.5);
 }
 
 /* Puntuaciones */
 .score {
-  font-size: 4rem;
-  font-weight: 600;
-  color: #03e9f4;
-  text-shadow: 0 0 15px rgba(3,233,244,0.7);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #ff4500;
+  text-shadow: 0 0 18px rgba(255, 69, 0, 0.7);
 }
 
 /* Efectos flotantes */
 .floating {
-  animation: float 6s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
 .pulsing {
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse 1.8s ease-in-out infinite;
 }
 
 @keyframes character-idle {
@@ -332,66 +415,41 @@ onUnmounted(() => {
     transform: translateY(0) rotate(0deg);
   }
   25% {
-    transform: translateY(-5px) rotate(-2deg);
+    transform: translateY(-4px) rotate(-1deg);
   }
   50% {
     transform: translateY(0) rotate(0deg);
   }
   75% {
-    transform: translateY(-5px) rotate(2deg);
+    transform: translateY(-4px) rotate(1deg);
   }
 }
 
 @keyframes character-hover {
   0%, 100% {
     transform: translateY(0) scale(1) rotate(0deg);
-    filter: brightness(1);
+    filter: brightness(1.1);
   }
   50% {
-    transform: translateY(-10px) scale(1.05) rotate(5deg);
-    filter: brightness(1.2);
+    transform: translateY(-8px) scale(1.07) rotate(4deg);
+    filter: brightness(1.4);
   }
-}
-
-.character-container {
-  min-height: 20px;
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.character-animation {
-  animation: character-idle 4s ease-in-out infinite;
-  transition: all 0.3s ease;
-}
-
-.character-animation:hover {
-  animation: character-hover 1s ease-in-out infinite;
 }
 
 .team-icon {
-  max-height: none; /* Permitir que las imágenes crezcan sin restricciones */
-  height: auto; /* Ajustar la altura automáticamente */
-}
-
-
-/* Mejora en la transición de los botones */
-.action-btn {
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.action-btn:hover {
-  transform: translateY(-5px) scale(1.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  max-height: 250px;
+  width: auto;
+  height: auto;
 }
 
 /* Mejora en el efecto de brillo del texto */
 .glow-text {
-  text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 20px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.3);
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 25px rgba(255, 255, 255, 0.5), 0 0 35px rgba(255, 255, 255, 0.3);
 }
 
 @keyframes float {
   0% { transform: translateY(0px); }
-  50% { transform: translateY(-20px); }
+  50% { transform: translateY(-15px); }
   100% { transform: translateY(0px); }
 }
 </style>

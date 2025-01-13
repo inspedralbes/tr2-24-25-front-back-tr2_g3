@@ -2,41 +2,33 @@
   <div class="cosmic-background">
     <div class="overlay"></div>
     
-    <!-- Botón de ajustes fuera del div principal -->
-    <v-btn 
-      color="secondary" 
-      rounded
-      class="gestion-mates-btn stylish-btn"
-      @click="GestionMates"
-    >
-      <v-icon left>mdi-settings-outline</v-icon> <!-- Icono más llamativo -->
-      Ir a Gestión
-    </v-btn>
+    <v-btn
+        @click="GestionMates"
+        class="ma-2"
+        color="purple"
+        icon="mdi-wrench"
+      ></v-btn>
 
     <v-container fluid class="d-flex align-center justify-center" style="height: 100vh;">
       <v-card 
         class="game-card glass-morphism" 
-        elevation="15"
-        max-width="400"
-        data-aos="zoom-in"
+        elevation="20"
+        max-width="500"
+        data-aos="zoom-in-up"
       >
         <!-- Imagen con efectos -->
         <v-img
           :src="imageSrc"
           alt="Juego Matemáticas"
           class="game-image"
-          height="200"
+          height="300"
         >
           <template #default>
             <div class="image-overlay">
-              <!-- Botón de Descargar Imagen -->
-              <v-btn 
-                class="download-btn stylish-btn"
-                @click="downloadImage"
-              >
-                <v-icon left>mdi-download</v-icon> <!-- Icono atractivo para descarga -->
-                Descargar Imagen
+              <v-btn @click="downloadImage" class="ma-2" color="indigo" icon>
+                <v-icon>mdi-cloud-upload</v-icon>
               </v-btn>
+
             </div>
           </template>
         </v-img>
@@ -47,14 +39,14 @@
             class="text-h4 mb-2 neon-text" 
             data-aos="fade-up"
           >
-            Matemáticas Challenge
+            Atrapa la Bandera Matemática
           </h2>
           <p 
             class="text-subtitle-2 text-medium-emphasis" 
             data-aos="fade-up" 
             data-aos-delay="200"
           >
-            Desafía tu inteligencia matemática
+            ¡Resuelve ecuaciones y atrapa la bandera!
           </p>
         </v-card-text>
 
@@ -67,8 +59,8 @@
             @click="CrearSala"
             data-aos="zoom-in-up"
           >
-            <v-icon left>mdi-play-circle-outline</v-icon> <!-- Icono llamativo para crear sala -->
-            Crear Sala
+            <v-icon left>mdi-flag-checkered</v-icon> 
+            ¡Atrapa la Bandera!
           </v-btn>
         </v-card-actions>
 
@@ -108,20 +100,25 @@ onMounted(() => {
     router.push("/");
   }
   AOS.init({
-    duration: 1000,
+    duration: 1500,  // Transición más lenta para efectos dramáticos
     once: true
   });
 });
 </script>
 
-
-
 <style scoped>
 .cosmic-background {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #7B4D91;
+  background-size: cover;
   min-height: 100vh;
   position: relative;
   overflow: hidden;
+  animation: space-animation 60s infinite linear;
+}
+
+@keyframes space-animation {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 100%; }
 }
 
 .overlay {
@@ -130,111 +127,102 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at top right, rgba(255,255,255,0.3), transparent 50%),
-              radial-gradient(circle at bottom left, rgba(255,255,255,0.2), transparent 50%);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .glass-morphism {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255,255,255,0.25);
   border-radius: 30px !important;
+  box-shadow: 0 0 15px rgba(255,255,255,0.5);
 }
 
 .game-card {
-  transition: all 0.5s ease;
+  transition: all 0.6s ease;
 }
 
 .game-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-10px) scale(1.1);
+  box-shadow: 0 10px 50px rgba(255, 255, 255, 0.6);
 }
 
 .neon-text {
-  color: #fff;
+  color: #ff0ff0;
+  text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.6);
 }
 
 .stylish-btn {
-  background: linear-gradient(90deg, #ff6a00, #ee0979); /* Gradiente vibrante */
-  color: white; /* Color del texto */
-  border-radius: 25px; /* Bordes redondeados */
-  padding: 12px; /* Espaciado interno */
-  font-weight: bold; /* Negrita */
+  color: white;
+  border-radius: 25px;
+  padding: 15px 20px;
+  font-weight: bold;
   box-shadow:
-     -1px -1px rgba(255,255,255,.5),
-     -2px -2px rgba(0,0,0,.5); /* Sombra brillante */
-  transition: background-color .3s ease, transform .2s; /* Transiciones suaves */
+    -1px -1px rgba(255,255,255,.5),
+    -2px -2px rgba(0,0,0,.5);
+  transition: background-color .3s ease, transform .2s;
 }
 
 .stylish-btn:hover {
-   background-color: #ff4c00; /* Color más oscuro al pasar el ratón */
-   transform: scale(1.05) rotate(3deg); /* Efecto de aumento y rotación al pasar el ratón */
-   box-shadow:
-     -1px -1px rgba(255,255,255,.7),
-     -2px -2px rgba(0,0,0,.7); /* Sombra más intensa al pasar el ratón */
+  background-color: #ff4c00;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow:
+    -1px -1px rgba(255,255,255,.7),
+    -2px -2px rgba(0,0,0,.7);
 }
 
 .download-btn {
-   background-color: #4caf50; /* Color verde para el botón de descarga */
-   color: white; /* Color del texto */
-   border-radius: 25px; /* Bordes redondeados */
-   padding: 12px; /* Espaciado interno */
-   font-weight: bold; /* Negrita */
-   transition: background-color .3s ease, transform .2s; /* Transiciones suaves */
-   box-shadow:
-     -1px -1px rgba(255,255,255,.5),
-     -2px -2px rgba(0,0,0,.5); /* Sombra brillante */
+  background-color: #4caf50;
+  color: white;
+  border-radius: 25px;
+  padding: 12px;
+  font-weight: bold;
+  transition: background-color .3s ease, transform .2s;
+  box-shadow:
+    -1px -1px rgba(255,255,255,.5),
+    -2px -2px rgba(0,0,0,.5);
 }
 
 .download-btn:hover {
-   background-color: #45a049; /* Color más oscuro al pasar el ratón */
-   transform: scale(1.05) rotate(-3deg); /* Efecto de aumento y rotación al pasar el ratón */
-   box-shadow:
-     -1px -1px rgba(255,255,255,.7),
-     -2px -2px rgba(0,0,0,.7); /* Sombra más intensa al pasar el ratón */
+  background-color: #45a049;
+  transform: scale(1.05) rotate(-3deg);
+  box-shadow:
+    -1px -1px rgba(255,255,255,.7),
+    -2px -2px rgba(0,0,0,.7);
 }
 
 .gestion-mates-btn {
-   background-color: #2196f3; /* Color azul para el botón de gestión */
-   color: white; /* Color del texto */
-   border-radius: 25px; /* Bordes redondeados */
-   padding: 12px; /* Espaciado interno */
-   font-weight: bold; /* Negrita */
-   transition: background-color .3s ease, transform .2s; /* Transiciones suaves */
-   box-shadow:
-     -1px -1px rgba(255,255,255,.5),
-     -2px -2px rgba(0,0,0,.5); /* Sombra brillante */
+  background-color: #2196f3;
+  color: white;
+  border-radius: 25px;
+  padding: 12px;
+  font-weight: bold;
+  transition: background-color .3s ease, transform .2s;
+  box-shadow:
+    -1px -1px rgba(255,255,255,.5),
+    -2px -2px rgba(0,0,0,.5);
 }
 
 .gestion-mates-btn:hover {
-   background-color: #1976d2; /* Color más oscuro al pasar el ratón */
-   transform: scale(1.05) rotate(-3deg); /* Efecto de aumento y rotación al pasar el ratón */
-   box-shadow:
-     -1px -1px rgba(255,255,255,.7),
-     -2px -2px rgba(0,0,0,.7); /* Sombra más intensa al pasar el ratón */
-}
-
-.floating-btn {
-   position: fixed;
-   top: 20px;
-   left: 20px;
-   z-index: 1000;
-   background-color: rgba(255, 255, 255, .2);
-   backdrop-filter: blur(5px);
-   transition: all .3s ease;
-}
-
-.floating-btn:hover {
-   background-color: rgba(255,255,255,.3);
-   transform: rotate(90deg);
+  background-color: #1976d2;
+  transform: scale(1.05) rotate(-3deg);
+  box-shadow:
+    -1px -1px rgba(255,255,255,.7),
+    -2px -2px rgba(0,0,0,.7);
 }
 
 .image-overlay {
-   position: absolute;
-   top: 0;
-   right: 0;
-   bottom: 0;
-   left: 0;
-   display: flex;
-   justify-content: flex-end;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@keyframes space-animation {
+  0% { background-position: 0 0; }
+  100% { background-position: 100% 100%; }
 }
 </style>

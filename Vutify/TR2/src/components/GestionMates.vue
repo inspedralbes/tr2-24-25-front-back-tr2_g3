@@ -217,6 +217,10 @@ const VolverAtras = async () => {
 }
 
 onMounted(() => {
+  const pinia = useAppStore();
+  if (pinia.token === '') {
+    router.push("/");
+  }
   initialize();
 });
 </script>

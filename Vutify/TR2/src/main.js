@@ -6,6 +6,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import router from './router';
 import pinia from './stores'; // Importa la instancia de Pinia
+import '@mdi/font/css/materialdesignicons.css'; // Importa los estilos CSS para los íconos
 
 // Configuración de Vuetify con tema oscuro
 const vuetify = createVuetify({
@@ -22,6 +23,14 @@ const vuetify = createVuetify({
           secondary: '#03DAC6', // Color secundario
           error: '#CF6679',     // Color para errores
         },
+      },
+    },
+  },
+  icons: {
+    defaultSet: 'mdi', // Usar Material Design Icons por defecto
+    sets: {
+      mdi: {
+        iconfont: 'mdi', // Cambiado a 'mdi' para usar la fuente MDI
       },
     },
   },
