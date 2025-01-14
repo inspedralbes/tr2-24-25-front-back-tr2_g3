@@ -283,7 +283,7 @@ onMounted(async () => {
   ganador.value = 'Equipo Rojo'; 
 });
 
-socket.on('winner-team-verde', () => {
+socket.on('winner-team-green', () => {
   console.log('HOLAVERDE')
   ganador.value = 'Equipo Verd';
 });
