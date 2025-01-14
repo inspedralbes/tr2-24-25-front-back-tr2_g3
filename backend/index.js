@@ -29,6 +29,7 @@ const io = new Server(server, {
 // Middleware
 app.use(cors()); // Habilita CORS
 app.use(express.json()); // Permite recibir y trabajar con JSON
+app.use('/graph-images', express.static(path.join(__dirname, 'graph-images')));
 
 // Socket.IO
 io.on('connection', (socket) => {
