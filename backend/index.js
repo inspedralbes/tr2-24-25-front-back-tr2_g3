@@ -237,36 +237,6 @@ app.post('/createStats', async (req, res) => {
     }
 });
 
-// Esta función se ejecutará cada 5 minutos
-setInterval(() => {
-    const currentTime = new Date().getTime();
-
-    // Filtrar y eliminar imágenes antiguas
-    imagesNames = imagesNames.filter(image => {
-        const imageAge = currentTime - new Date(image.timestamp).getTime();
-
-        // Si la imagen tiene más de 1 hora de antigüedad (3600000 ms), eliminarla
-        if (imageAge > 3600000) {
-            const imagePath = path.join(new URL('.', import.meta.url).pathname, 'graph-images', `${image.imageName}.png`);
-
-            // Borrar el archivo
-            fs.unlink(imagePath, (err) => {
-                if (err) {
-                    console.error(`Error al borrar el archivo ${image.imageName}.png:`, err);
-                } else {
-                    console.log(`Archivo ${image.imageName}.png eliminado correctamente.`);
-                }
-            });
-
-            // Retornar false para eliminar el objeto del array
-            return false;
-        }
-
-        // Retornar true para mantener el objeto en el array
-        return true;
-    });
-}, 5 * 60 * 1000); // Ejecutar cada 5 minutos
-
 app.post('/flag-action', async (req, res) => {
     const { action, payload, flagTeam } = req.body;
 
