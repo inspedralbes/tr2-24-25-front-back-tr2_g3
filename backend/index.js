@@ -347,6 +347,16 @@ app.post('/question-result', async (req, res) => {
     }
 });
 
+app.post('/winner-team', async (req, res) => {
+    const { team } = req.body;
+
+    const teamColor = team.toLowerCase() === 'red' ? 'red' : 'green';
+
+    io.emit(`winner-team-${teamColor}`);
+
+    res.status(200).json({ message: 'Equipo ganador anunciado con éxito' });
+});
+
 
 // Rutas básicas
 app.get('/', (req, res) => {
