@@ -7,8 +7,14 @@ try:
     data = json.loads(sys.argv[1])
     image_name = sys.argv[2]
 
-    # Crear el directorio "images/graphs" si no existe
-    output_dir = "images/graphs"
+    # Obtener el directorio actual del script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Obtener el directorio padre (un nivel arriba)
+    parent_dir = os.path.dirname(current_dir)
+
+    # Crear el directorio "images/graphs" dentro del directorio padre si no existe
+    output_dir = os.path.join(parent_dir, "public_html", "images", "graphs")
     os.makedirs(output_dir, exist_ok=True)
 
     # Crear la ruta completa para la imagen
@@ -73,8 +79,6 @@ try:
 
     plt.savefig(image_path)
     print(f"Gráfico guardado como {image_path}")
-
-
 
 except Exception as e:
     print(f"Error: {e}")
