@@ -83,27 +83,36 @@ async function getCode () {
 
 async function obtenerEstadisticas(day, month, year) {
     const pinia = useAppStore();
-    const response = await fetch(`${urlBase}/createStats`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            'Accept': "application/json",
-            'Authorization': `Bearer ${pinia.token}`,
-        },
-        body: JSON.stringify({
-            day,
-            month,
-            year,
-        }),
+    const params = new URLSearchParams({
+        day: day,
+        month: month,
+        year: year,
     });
+    const url = `http://catch-the-math.dam.inspedralbes.cat:29876/createStats?${params.toString()}`;
+    try {
+        const response = await fetch(url, {
+            method: 'GET', 
+            headers: {
+                "Content-Type": "application/json",
+                'Accept': "application/json",
+                'Authorization': `Bearer ${pinia.token}`,
+            },
+        });
 
-    if (response.ok) {
-        const imageName = await response.text(); 
-        return imageName;
-    } else {
-        throw new Error('Error al obtener las estadísticas');
+        if (!response.ok) {
+            throw new Error(`Error al obtener las estadísticas: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Datos recibidos:', data);
+        return data;
+    } catch (error) {
+        console.error('Error al obtener las estadísticas:', error);
+        throw error;
     }
 }
+
+
 
   
 

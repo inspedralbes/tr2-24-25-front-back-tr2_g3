@@ -46,7 +46,6 @@
 
         <v-card-text class="text-center py-4">
           <div class="d-flex justify-space-between align-center" style="gap: 100px;">
-            <!-- Equipo Verde - Extremo Izquierdo -->
             <div class="team-container" style="width: 20%; margin-left: 50px;">
               <div class="character-section">
                 <v-img
@@ -64,12 +63,10 @@
               </div>
             </div>
             
-            <!-- Gráfica en el Centro -->
             <div class="chart-container" style="width: 60%;">
               <canvas id="killsChart" width="800" height="400"></canvas>
             </div>
             
-            <!-- Equipo Rojo - Extremo Derecho -->
             <div class="team-container" style="width: 20%; margin-right: 50px;">
               <div class="character-section">
                 <v-img
@@ -151,7 +148,7 @@ const winningTeam = computed(() => {
 });
 
 // Conectar al servidor WebSocket
-const socket = io('http://catch-the-math.dam.inspedralbes.cat:29876'); 
+const socket = io('http://catch-the-math.dam.inspedralbes.cat:29876/'); 
 
 // Crear el código de la sala
 const CreateCode = async () => {
@@ -170,12 +167,12 @@ const CreateCode = async () => {
 const showStats = async () => {
       console.log('enseña Grafica');
       router.push('/Estadisticas');  
-    };
+};
 
 
 // Regresar a la página anterior
 const goBack = () => {
-  router.go(-1);
+  router.push(`/main`);
 };
 
 // Crear el gráfico de muertes

@@ -66,6 +66,13 @@
 
       </v-card>
     </v-container>
+    <v-btn 
+      icon 
+      class="stats-btn"
+      @click="showStats"
+    >
+      <v-icon>mdi-chart-bar</v-icon>
+    </v-btn>
   </div>
 </template>
 
@@ -92,6 +99,10 @@ const downloadImage = () => {
   link.href = imageSrc;
   link.download = 'MathGame.png';
   link.click();
+};
+const showStats = async () => {
+      console.log('enseña Grafica');
+      router.push('/Estadisticas');  
 };
 
 onMounted(() => {
@@ -140,6 +151,19 @@ onMounted(() => {
 
 .game-card {
   transition: all 0.6s ease;
+}
+
+.stats-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.stats-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .game-card:hover {
