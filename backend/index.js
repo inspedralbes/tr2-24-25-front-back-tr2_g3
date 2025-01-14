@@ -119,7 +119,7 @@ function getQuery(year, month, day, user_id, lastWeek) {
     return query;
 }
 
-app.get('/getStats', async (req, res) => {
+app.post('/getStats', async (req, res) => {
 
     const { year, month, day, user_id, lastWeek } = req.body;
 
@@ -171,7 +171,7 @@ app.get('/getStats', async (req, res) => {
 
 const imagesNames = [];
 
-app.get('/createStats', async (req, res) => {
+app.post('/createStats', async (req, res) => {
     const { year, month, day, user_id, lastWeek } = req.body;
 
     try {
