@@ -377,9 +377,9 @@ app.post('/change-info', async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Modificar la información del usuario
-        await communicationManager.changeEmail(user_id, email);
-        await communicationManager.changeUsername(user_id, username);
-        await communicationManager.changePassword(user_id, hashedPassword);
+        if(email) await communicationManager.changeEmail(user_id, email);
+        if(username) await communicationManager.changeUsername(user_id, username);
+        if(newPassword) await communicationManager.changePassword(user_id, hashedPassword);
 
         res.status(201).json({ message: 'Información modificada exitosamente' });
 
