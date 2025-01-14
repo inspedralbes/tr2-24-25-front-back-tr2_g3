@@ -357,6 +357,38 @@ app.post('/winner-team', async (req, res) => {
     res.status(200).json({ message: 'Equipo ganador anunciado con éxito' });
 });
 
+app.post('/change-info', async (req, res) => {
+    const { user_id, username, email, newPassword } = req.body;
+
+    // si no tengo user_id no hago nada
+    if (!user_id) {
+        return res.status(400).json({ message: 'Se requiere un usuario' });
+    }
+
+    try {
+        // Buscar el usuario en la base de datos a través del communicationManager
+        const user = await communicationManager.getUserById(user_id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Encriptar la contraseña
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Modificar la información del usuario
+        await communicationManager.changeEmail(user_id, email);
+        await communicationManager.changeUsername(user_id, username);
+        await communicationManager.changePassword(user_id, hashedPassword);
+
+        res.status(201).json({ message: 'Información modificada exitosamente' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error al modificar información' });
+        }
+    }
+);
 
 // Rutas básicas
 app.get('/', (req, res) => {

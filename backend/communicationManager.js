@@ -28,6 +28,27 @@ async function getUserById(id) {
   return rows[0];
 }
 
+// Función para cambiar el correo de un usuario
+async function changeEmail(userId, newEmail) {
+  const query = 'UPDATE users SET email = ? WHERE id = ?';
+  const [result] = await pool.query(query, [newEmail, userId]);
+  return result;
+}
+
+// Función para cambiar el nombre de usuario de un usuario
+async function changeUsername(userId, newUsername) {
+  const query = 'UPDATE users SET username = ? WHERE id = ?';
+  const [result] = await pool.query(query, [newUsername, userId]);
+  return result;
+}
+
+// Función para cambiar la contraseña de un usuario
+async function changePassword(userId, newPassword) {
+  const query = 'UPDATE users SET password = ? WHERE id = ?';
+  const [result] = await pool.query(query, [newPassword, userId]);
+  return result;
+}
+
 // Función para buscar un usuario por su useremail
 async function findUserByMail(useremail) {
   const query = 'SELECT * FROM users WHERE email = ?';
