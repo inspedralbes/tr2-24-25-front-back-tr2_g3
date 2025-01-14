@@ -34,7 +34,9 @@ const io = new Server(server, {
 app.use(cors()); // Habilita CORS
 app.use(express.json()); // Permite recibir y trabajar con JSON
 app.use('/graph-images', express.static(path.join(__dirname, 'graph-images')));
-app.use('/', express.static(path.join(__dirname, '')));
+
+// Servir todos los archivos estáticos desde la carpeta 'public_html'
+app.use(express.static(path.join(__dirname, 'public_html')));
 
 // Socket.IO
 io.on('connection', (socket) => {
