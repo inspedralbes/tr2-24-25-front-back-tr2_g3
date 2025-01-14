@@ -34,6 +34,7 @@ const io = new Server(server, {
 app.use(cors()); // Habilita CORS
 app.use(express.json()); // Permite recibir y trabajar con JSON
 app.use('/graph-images', express.static(path.join(__dirname, 'graph-images')));
+app.use('/', express.static(path.join(__dirname, '')));
 
 // Socket.IO
 io.on('connection', (socket) => {
@@ -363,11 +364,6 @@ app.post('/change-info', async (req, res) => {
         }
     }
 );
-
-// Rutas básicas
-app.get('/', (req, res) => {
-    res.json({ message: 'Servidor funcionando correctamente' });
-});
 
 function verifyToken(secrets) {
     return (req, res, next) => {
