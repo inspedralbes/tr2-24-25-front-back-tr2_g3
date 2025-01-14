@@ -70,23 +70,51 @@ async function getUser () {
 
 async function getCode () {
     const pinia = useAppStore();
-    // const response = await fetch(`${urlBase}/create-code`,{
-    //     method: "GET",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         'Accept': "application/json",
-    //         'Authorization': `Bearer ${pinia.token}`,
-    //     },
-    // });
+    const response = await fetch(`${urlBase}/create-code`,{
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': "application/json",
+            'Authorization': `Bearer ${pinia.token}`,
+        },
+    });
     return response;
 }
+
+async function obtenerEstadisticas(day, month, year) {
+    const pinia = useAppStore();
+    const response = await fetch(`${urlBase}/createStats`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            'Accept': "application/json",
+            'Authorization': `Bearer ${pinia.token}`,
+        },
+        body: JSON.stringify({
+            day,
+            month,
+            year,
+        }),
+    });
+
+    if (response.ok) {
+        const imageName = await response.text(); 
+        return imageName;
+    } else {
+        throw new Error('Error al obtener las estadísticas');
+    }
+}
+
+  
+
 
 const communicationManager = {
  login,
  register,
  getUser,
  getCode,
- modifyPermission
+ modifyPermission,
+ obtenerEstadisticas
 }
 
 export default communicationManager;

@@ -4,15 +4,6 @@
     <div class="twinkling"></div>
     <div class="clouds"></div>
 
-    <v-btn 
-      color="primary" 
-      fab
-      class="stats-btn animated-btn pulsing"
-      @click="showStats"
-    >
-      <v-icon>mdi-chart-bar</v-icon>
-    </v-btn>
-
     <v-container fluid class="d-flex align-center justify-center" style="height: 100vh; width: 100%;">
       <v-card 
         class="game-card space-glass" 
@@ -34,6 +25,7 @@
                   height="200" 
                   width="200" 
                   class="team-icon character-animation"
+                  :class="{ 'accelerated-animation': flagBearerB !== 'Base' }"
                 ></v-img>
               </div>
             </div>
@@ -45,6 +37,7 @@
                   height="200" 
                   width="200" 
                   class="team-icon character-animation"
+                  :class="{ 'accelerated-animation': flagBearerA !== 'Base' }"
                 ></v-img>
               </div>
             </div>
@@ -52,47 +45,61 @@
         </v-card-text>
 
         <v-card-text class="text-center py-4">
-          <div class="d-flex justify-space-around team-scores">
-            <div class="team-score">
-              <div class="character-container">
+          <div class="d-flex justify-space-between align-center" style="gap: 100px;">
+            <!-- Equipo Verde - Extremo Izquierdo -->
+            <div class="team-container" style="width: 20%; margin-left: 50px;">
+              <div class="character-section">
                 <v-img
-  src="@/assets/images/PersonajeVerde.png"
-  height="200" 
-  width="200" 
-  class="team-icon character-animation"
-  :class="{ 
-    'winning-animation': winningTeam === 'team-a',
-    'losing-animation': winningTeam !== 'team-a' && winningTeam !== null
-  }"
-></v-img>
-
+                  src="@/assets/images/PersonajeVerde.png"
+                  height="200" 
+                  width="200" 
+                  class="team-icon character-animation"
+                  :class="{ 
+                    'winning-animation': teamAKills > teamBKills,
+                    'losing-animation': teamAKills < teamBKills
+                  }"
+                ></v-img>
+                <h3 class="team-name glow-text">Equipo A</h3>
+                <p class="score glow-text pulsing">{{ teamAKills }}</p>
               </div>
-              <h3 class="team-name glow-text">Equipo A</h3>
-              <p class="score glow-text pulsing">{{ teamAKills }}</p>
             </div>
-            <div class="team-score">
-              <div class="character-container">
+            
+            <!-- Gráfica en el Centro -->
+            <div class="chart-container" style="width: 60%;">
+              <canvas id="killsChart" width="800" height="400"></canvas>
+            </div>
+            
+            <!-- Equipo Rojo - Extremo Derecho -->
+            <div class="team-container" style="width: 20%; margin-right: 50px;">
+              <div class="character-section">
                 <v-img
-  src="@/assets/images/PersonajeRojoActualiazdooo.png"
-  height="200" 
-  width="200" 
-  class="team-icon character-animation"
-  :class="{ 
-    'winning-animation': winningTeam === 'team-b',
-    'losing-animation': winningTeam !== 'team-b' && winningTeam !== null
-  }"
-></v-img>
+                  src="@/assets/images/PersonajeRojoActualiazdooo.png"
+                  height="200" 
+                  width="200" 
+                  class="team-icon character-animation"
+                  :class="{ 
+                    'winning-animation': teamBKills > teamAKills,
+                    'losing-animation': teamBKills < teamAKills
+                  }"
+                ></v-img>
+                <h3 class="team-name glow-text">Equipo B</h3>
+                <p class="score glow-text pulsing">{{ teamBKills }}</p>
               </div>
-              <h3 class="team-name glow-text">Equipo B</h3>
-              <p class="score glow-text pulsing">{{ teamBKills }}</p>
             </div>
           </div>
         </v-card-text>
 
+
+
         <!-- Gráfico de muertes -->
         <v-card-text class="text-center py-4">
-          <canvas id="killsChart" width="400" height="400"></canvas>
+          <canvas id="killsChart" width="400" height="200"></canvas>
         </v-card-text>
+        <v-btn>
+          <v-icon left>mdi-chart-bar</v-icon>
+          Ver estadísticas
+        </v-btn>
+
 
         <v-card-actions class="justify-center pb-4">
           <v-btn 
@@ -108,25 +115,33 @@
         </v-card-actions>
       </v-card>
     </v-container>
+    <v-btn 
+      icon 
+      class="stats-btn"
+      @click="showStats"
+    >
+      <v-icon>mdi-chart-bar</v-icon>
+    </v-btn>
   </div>
 </template>
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from "vue-router";
 import { io } from 'socket.io-client';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { Chart } from 'chart.js';
+import Chart from 'chart.js/auto';
 import communicationManager from '../services/communicationManager';
 import { useAppStore } from '@/stores/app';
 
 // Variables reactivas
 const router = useRouter();
 const roomCode = ref();
-const flagBearerA = ref('Base');  // Nombre por defecto para la bandera A
-const flagBearerB = ref('Base');  // Nombre por defecto para la bandera B
-const teamAKills = ref(3); 
-const teamBKills = ref(2);
+const flagBearerA = ref('Base');
+const flagBearerB = ref('Base');
+const teamAKills = ref(0); 
+const teamBKills = ref(0);
 
 // Computed para determinar el equipo ganador
 const winningTeam = computed(() => {
@@ -136,7 +151,7 @@ const winningTeam = computed(() => {
 });
 
 // Conectar al servidor WebSocket
-const socket = io('http://localhost:3000'); 
+const socket = io('http://catch-the-math.dam.inspedralbes.cat:29876'); 
 
 // Crear el código de la sala
 const CreateCode = async () => {
@@ -152,10 +167,11 @@ const CreateCode = async () => {
   }
 };
 
-// Mostrar estadísticas (placeholder para lógica futura)
-const showStats = () => {
-  console.log('Mostrando estadísticas');
-};
+const showStats = async () => {
+      console.log('enseña Grafica');
+      router.push('/Estadisticas');  
+    };
+
 
 // Regresar a la página anterior
 const goBack = () => {
@@ -169,25 +185,53 @@ const createChart = () => {
   const ctx = document.getElementById('killsChart').getContext('2d');
   killsChart = new Chart(ctx, {
     type: 'bar',
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 800,
+        easing: 'easeOutBounce',
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)',
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          }
+        },
+        x: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)',
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: 'rgba(255, 255, 255, 0.7)',
+          }
+        }
+      }
+    },
     data: {
       labels: ['Equipo A', 'Equipo B'],
       datasets: [{
         label: 'Muertes',
         data: [teamAKills.value, teamBKills.value],
-        backgroundColor: ['rgba(0, 123, 255, 0.5)', 'rgba(255, 99, 132, 0.5)'],
-        borderColor: ['rgba(0, 123, 255, 1)', 'rgba(255, 99, 132, 1)'],
+        backgroundColor: ['rgba(0, 255, 0, 0.6)', 'rgba(255, 0, 0, 0.6)'],
+        borderColor: ['rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
         borderWidth: 1
       }]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
-      }
     }
   });
 };
+
 
 // Actualizar el gráfico cuando cambien las muertes
 const updateChart = () => {
@@ -197,7 +241,8 @@ const updateChart = () => {
   }
 };
 
-// Escuchar los eventos de WebSocket
+watch([teamAKills, teamBKills], updateChart);
+
 onMounted(async () => {
   const pinia = useAppStore();
   if (pinia.token === '') {
@@ -209,28 +254,25 @@ onMounted(async () => {
   });
 
   await CreateCode();
-  createChart();  // Inicializa el gráfico al montar el componente
+  nextTick(() => {
+    createChart();
+  });  
 
-  // Escuchar evento de estadísticas de equipo
-  socket.on('team-kills-rojo', (data) => {
-    teamAKills.value = data.teamA || 0; 
+  socket.on('correct-answer-red', () => {
+    teamAKills.value++;
   });
-  socket.on('team-kills-verde', (data) => {
-    teamBKills.value = data.teamB || 0; 
-  });
-
-  // Escuchar evento para asignar nombres a los portadores de las banderas
-  socket.on('flag-bearer-a', (data) => {
-    flagBearerA.value = data.name || 'Base'; // Actualizar el nombre del portador
+  socket.on('correct-answer-green', () => {
+    teamBKills.value++;
   });
 
-  socket.on('flag-bearer-b', (data) => {
-    flagBearerB.value = data.name || 'Base'; // Actualizar el nombre del portador
+  socket.on('flag-red-taken', (data) => {
+    flagBearerA.value = data.name || 'Base'; 
+  });
+
+  socket.on('flag-green-taken', (data) => {
+    flagBearerB.value = data.name || 'Base'; 
   });
 });
-
-// Actualizar el gráfico cada vez que cambian las muertes
-watch([teamAKills, teamBKills], updateChart);
 
 onUnmounted(() => {
   socket.disconnect();
@@ -250,6 +292,17 @@ onUnmounted(() => {
 }
 .accelerated-animation {
   animation-duration: 0.5s !important; /* Acelera la animación */
+}
+
+.team-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30%;
+}
+
+.chart-container {
+  width: 40%;
 }
 
 #killsChart {
@@ -279,6 +332,28 @@ onUnmounted(() => {
   }
 }
 
+.chart-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .v-card-text {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#killsChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
 
 /* Ajustes del contenedor */
 .v-container {
@@ -294,7 +369,7 @@ onUnmounted(() => {
   background-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
   max-width: 90vw;
-  width: 30vw;
+  width: 60vw;
   height: 90vh;
 }
 .game-card:hover {
@@ -370,11 +445,10 @@ onUnmounted(() => {
   text-shadow: 0 0 18px rgba(255, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6), 0 0 50px rgba(0, 255, 255, 0.4);
 }
 
-/* Botones */
 .stats-btn {
   position: fixed;
-  top: 25px;
-  right: 25px;
+  top: 20px;
+  right: 20px;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
