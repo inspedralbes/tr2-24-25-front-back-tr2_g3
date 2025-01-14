@@ -207,7 +207,7 @@ app.get('/createStats', async (req, res) => {
 
         // generate a random name for the image
         const imageName = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const pythonProcess = spawn('py', ['grafica.py', JSON.stringify(total_data), imageName]);
+        const pythonProcess = spawn('python3', ['grafica.py', JSON.stringify(total_data), imageName]);
 
         pythonProcess.stdout.on('data', (data) => {
             console.log(`Python stdout: ${data}`);
