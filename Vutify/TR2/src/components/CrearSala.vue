@@ -45,73 +45,61 @@
         </v-card-text>
 
         <v-card-text class="text-center py-4">
-          <div class="d-flex justify-space-between align-center" style="gap: 100px;">
-            <div class="team-container" style="width: 20%; margin-left: 50px;">
-              <div class="character-section">
-                <v-img
-                  src="@/assets/images/PersonajeVerde.png"
-                  height="200" 
-                  width="200" 
-                  class="team-icon character-animation"
-                  :class="{ 
-                    'winning-animation': teamAKills > teamBKills,
-                    'losing-animation': teamAKills < teamBKills
-                  }"
-                ></v-img>
-                <h3 class="team-name glow-text">Equipo A</h3>
-                <p class="score glow-text pulsing">{{ teamAKills }}</p>
-              </div>
-            </div>
-            
-            <div class="chart-container" style="width: 60%;">
-              <canvas id="killsChart" width="800" height="400"></canvas>
-            </div>
-            
-            <div class="team-container" style="width: 20%; margin-right: 50px;">
-              <div class="character-section">
-                <v-img
-                  src="@/assets/images/PersonajeRojoActualiazdooo.png"
-                  height="200" 
-                  width="200" 
-                  class="team-icon character-animation"
-                  :class="{ 
-                    'winning-animation': teamBKills > teamAKills,
-                    'losing-animation': teamBKills < teamAKills
-                  }"
-                ></v-img>
-                <h3 class="team-name glow-text">Equipo B</h3>
-                <p class="score glow-text pulsing">{{ teamBKills }}</p>
-              </div>
-            </div>
-          </div>
-        </v-card-text>
+  <div class="d-flex justify-space-between align-center" style="gap: 100px;">
+    <div class="team-container" style="width: 20%; margin-left: 50px;">
+      <div class="character-section">
+        <v-img
+          src="@/assets/images/PersonajeVerde.png"
+          height="200" 
+          width="200" 
+          class="team-icon character-animation"
+          :class="{ 
+            'winning-animation': teamAKills > teamBKills,
+            'losing-animation': teamAKills < teamBKills
+          }"
+        ></v-img>
+        <h3 class="team-name glow-text">Equip Verd</h3>
+        <p class="score glow-text pulsing">{{ teamAKills }}</p>
+      </div>
+    </div>
+    
+    <div class="chart-container" style="width: 60%;">
+      <canvas id="killsChart" width="800" height="400"></canvas>
+    </div>
+    
+    <div class="team-container" style="width: 20%; margin-right: 50px;">
+      <div class="character-section">
+        <v-img
+          src="@/assets/images/PersonajeRojoActualiazdooo.png"
+          height="200" 
+          width="200" 
+          class="team-icon character-animation"
+          :class="{ 
+            'winning-animation': teamBKills > teamAKills,
+            'losing-animation': teamBKills < teamAKills
+          }"
+        ></v-img>
+        <h3 class="team-name glow-text">Equip Vermell</h3>
+        <p class="score glow-text pulsing">{{ teamBKills }}</p>
+      </div>
+    </div>
+  </div>
+</v-card-text>
 
-
-
+<!-- Mostrar el equipo ganador -->
+<v-card-text v-if="ganador"  class="text-center py-4">
+  <h2 class="glow-text winner-message">¡El ganador es: {{ ganador }}!</h2>
+</v-card-text>
+     
         <!-- Gráfico de muertes -->
         <v-card-text class="text-center py-4">
           <canvas id="killsChart" width="400" height="200"></canvas>
         </v-card-text>
-        <v-btn>
-          <v-icon left>mdi-chart-bar</v-icon>
-          Ver estadísticas
-        </v-btn>
 
-
-        <v-card-actions class="justify-center pb-4">
-          <v-btn 
-            color="secondary" 
-            rounded="pill"
-            class="action-btn animated-btn"
-            @click="goBack"
-            data-aos="zoom-in-up"
-          >
-            <v-icon left>mdi-rocket</v-icon>
-            Volver a la Base
-          </v-btn>
-        </v-card-actions>
       </v-card>
     </v-container>
+
+    <!-- Botón para mostrar estadísticas -->
     <v-btn 
       icon 
       class="stats-btn"
@@ -119,6 +107,14 @@
     >
       <v-icon>mdi-chart-bar</v-icon>
     </v-btn>
+    <v-btn
+        @click="goBack"
+        class="stats-btn2 stats-button"
+        color="purple"
+        icon="mdi-wrench"
+        style="font-size: 20px; padding: 30px 30px; display: flex; align-items: center; justify-content: center;" 
+      ><v-icon left>mdi-rocket</v-icon></v-btn>
+
   </div>
 </template>
 
@@ -135,6 +131,7 @@ import { useAppStore } from '@/stores/app';
 // Variables reactivas
 const router = useRouter();
 const roomCode = ref();
+const ganador = ref();
 const flagBearerA = ref('Base');
 const flagBearerB = ref('Base');
 const teamAKills = ref(0); 
@@ -165,8 +162,8 @@ const CreateCode = async () => {
 };
 
 const showStats = async () => {
-      console.log('enseña Grafica');
-      router.push('/Estadisticas');  
+    console.log('enseña Grafica');
+    router.push('/Estadisticas');  
 };
 
 
@@ -219,7 +216,7 @@ const createChart = () => {
     data: {
       labels: ['Equipo A', 'Equipo B'],
       datasets: [{
-        label: 'Muertes',
+        label: 'Kills',
         data: [teamAKills.value, teamBKills.value],
         backgroundColor: ['rgba(0, 255, 0, 0.6)', 'rgba(255, 0, 0, 0.6)'],
         borderColor: ['rgba(0, 255, 0, 1)', 'rgba(255, 0, 0, 1)'],
@@ -255,20 +252,41 @@ onMounted(async () => {
     createChart();
   });  
 
-  socket.on('correct-answer-red', () => {
+  socket.on('correct-answer-green', () => {
     teamAKills.value++;
   });
-  socket.on('correct-answer-green', () => {
+  socket.on('correct-answer-red', () => {
     teamBKills.value++;
   });
 
   socket.on('flag-red-taken', (data) => {
-    flagBearerA.value = data.name || 'Base'; 
+    console.log(data)
+    flagBearerA.value = data; 
+  });
+  socket.on('flag-red-returned', (data) => {
+    console.log(data)
+    flagBearerA.value = 'Base'; 
   });
 
+
   socket.on('flag-green-taken', (data) => {
-    flagBearerB.value = data.name || 'Base'; 
+    console.log(data)
+    flagBearerB.value = data; 
   });
+  socket.on('flag-green-returned', (data) => {
+    console.log(data)
+    flagBearerB.value = 'Base'; 
+  });
+
+  socket.on('winner-team-red', () => {
+    console.log('HOLAROJO')
+  ganador.value = 'Equipo Rojo'; 
+});
+
+socket.on('winner-team-verde', () => {
+  console.log('HOLAVERDE')
+  ganador.value = 'Equipo Verd';
+});
 });
 
 onUnmounted(() => {
@@ -279,6 +297,12 @@ onUnmounted(() => {
 
 
 <style scoped>
+
+.winner-message {
+  font-size: 2.5rem;
+  color: #FFD700; /* Color dorado para destacar */
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8); /* Efecto de brillo */
+}
 /* Fondo y superposiciones */
 .space-background {
   background: #7B4D91;
@@ -365,9 +389,9 @@ onUnmounted(() => {
   border-radius: 25px;
   background-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
-  max-width: 90vw;
-  width: 60vw;
-  height: 90vh;
+  max-width: 200vw;
+  width: 70vw;
+  height: 100vh;
 }
 .game-card:hover {
   transform: translateY(-8px);
@@ -454,9 +478,17 @@ onUnmounted(() => {
 .stats-btn:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+.stats-btn2 {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
 
 .action-btn {
-  position: fixed;  /* Mantener el botón fijo en la pantalla */    
+  position: fixed;    
   bottom: 10px;
 }
 

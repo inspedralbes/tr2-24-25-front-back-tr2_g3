@@ -81,22 +81,31 @@ async function getCode () {
     return response;
 }
 
-async function obtenerEstadisticas(day, month, year) {
+async function obtenerEstadisticas(bodyRequest) {
     const pinia = useAppStore();
-    const params = new URLSearchParams({
-        day: day,
-        month: month,
-        year: year,
+
+    console.log('Enviando los siguientes datos:', {
+     bodyRequest
     });
-    const url = `http://catch-the-math.dam.inspedralbes.cat:29876/createStats?${params.toString()}`;
+
+    // Log de la URL y los headers enviados
+    console.log('Headers enviados:', {
+        "Content-Type": "application/json",
+        'Accept': "application/json",
+        'Authorization': `Bearer ${pinia.token}`,
+    });
+
     try {
-        const response = await fetch(url, {
-            method: 'GET', 
+        const response = await fetch(`${urlBase}/createStats`, {
+            method: 'POST', 
             headers: {
                 "Content-Type": "application/json",
                 'Accept': "application/json",
                 'Authorization': `Bearer ${pinia.token}`,
             },
+            body: JSON.stringify(
+                bodyRequest
+            ),
         });
 
         if (!response.ok) {
@@ -112,9 +121,6 @@ async function obtenerEstadisticas(day, month, year) {
     }
 }
 
-
-
-  
 
 
 const communicationManager = {

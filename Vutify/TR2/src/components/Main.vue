@@ -4,9 +4,11 @@
     
     <v-btn
         @click="GestionMates"
-        class="ma-2"
+        class="stats-btn2 stats-button"
         color="purple"
         icon="mdi-wrench"
+        style="font-size: 30px; padding: 40px 40px; display: flex; align-items: center; justify-content: center;" 
+        
       ></v-btn>
 
     <v-container fluid class="d-flex align-center justify-center" style="height: 100vh;">
@@ -39,14 +41,14 @@
             class="text-h4 mb-2 neon-text" 
             data-aos="fade-up"
           >
-            Atrapa la Bandera Matemática
+            Catch  The  Math 
           </h2>
           <p 
             class="text-subtitle-2 text-medium-emphasis" 
             data-aos="fade-up" 
             data-aos-delay="200"
           >
-            ¡Resuelve ecuaciones y atrapa la bandera!
+          Resol equacions i atrapa la bandera!
           </p>
         </v-card-text>
 
@@ -60,19 +62,18 @@
             data-aos="zoom-in-up"
           >
             <v-icon left>mdi-flag-checkered</v-icon> 
-            ¡Atrapa la Bandera!
+            Atrapa la Bandera!
           </v-btn>
         </v-card-actions>
-
       </v-card>
     </v-container>
     <v-btn 
-      icon 
-      class="stats-btn"
+      class="stats-btn stats-button"
       @click="showStats"
-    >
-      <v-icon>mdi-chart-bar</v-icon>
-    </v-btn>
+      style="font-size: 30px; padding: 40px 40px; display: flex; align-items: center; justify-content: center;" 
+      icon="mdi-chart-bar"
+        >
+        </v-btn>
   </div>
 </template>
 
@@ -94,15 +95,16 @@ const CrearSala = () => {
   router.push("/CrearSala");
 };
 
+const showStats = async () => {
+      console.log('enseña Grafica');
+      router.push('/Estadisticas');  
+};
+
 const downloadImage = () => {
   const link = document.createElement('a');
   link.href = imageSrc;
   link.download = 'MathGame.png';
   link.click();
-};
-const showStats = async () => {
-      console.log('enseña Grafica');
-      router.push('/Estadisticas');  
 };
 
 onMounted(() => {
@@ -153,19 +155,6 @@ onMounted(() => {
   transition: all 0.6s ease;
 }
 
-.stats-btn {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.stats-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
 .game-card:hover {
   transform: translateY(-10px) scale(1.1);
   box-shadow: 0 10px 50px rgba(255, 255, 255, 0.6);
@@ -174,6 +163,23 @@ onMounted(() => {
 .neon-text {
   color: #ff0ff0;
   text-shadow: 0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.6);
+}
+
+.stats-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+.stats-btn2 {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
 .stylish-btn {
