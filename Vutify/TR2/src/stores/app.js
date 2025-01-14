@@ -1,44 +1,29 @@
 import { defineStore } from 'pinia';
-import { login, register } from '@/services/authService'; 
 
 export const useAppStore = defineStore('app', {
   state: () => ({
     user: {
-      name: '',
+      id: null,
+      username: '',
       email: '',
+      permission: null,
     },
     token: '',
-    isAuthenticated: false,
   }),
   actions: {
-    async login(email, password) {
-      try {
-        const data = await login(email, password);
-        this.token = data.token;
-        this.user = { ...this.user, email };
-        this.isAuthenticated = true;
-        return true;
-      } catch (error) {
-        console.error('Error al iniciar sesión:', error.message);
-        return false;
-      }
+    setUser(newUsername, newEmail, newPermission) {
+      console.log('SetUser llamado con:', { newUsername, newEmail, newPermission });
+      this.user.username = newUsername;
+      this.user.email = newEmail;
+      this.user.permission = newPermission;
+      console.log('Estado del usuario después de setUser:', this.user);
     },
-
-    async register(name, email, password) {
-      try {
-        const data = await register(name, email, password); 
-        console.log(data.message);
-        return true;
-      } catch (error) {
-        console.error('Error al registrar usuario:', error.message);
-        return false;
-      }
+    setToken(newToken) {
+      this.token = newToken;
     },
-
-    logout() {
-      this.user = { name: '', email: '' };
-      this.token = '';
-      this.isAuthenticated = false;
-    },
+  },
+  getters: {
+    isAdmin: (state) => state.user.permission === 'admin', 
+    isLoggedIn: (state) => !!state.token,
   },
 });
