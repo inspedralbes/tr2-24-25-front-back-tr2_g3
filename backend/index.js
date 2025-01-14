@@ -237,31 +237,35 @@ app.post('/createStats', async (req, res) => {
     }
 });
 
-function removeOldImages() {
-    const currentTime = new Date();
-    const oneHourInMilliseconds = 60 * 60 * 1000;
+// Esta función se ejecutará cada 5 minutos
+setInterval(() => {
+    const currentTime = new Date().getTime();
 
-    imagesNames.forEach((image, index) => {
-        const imageAge = currentTime - new Date(image.timestamp);
+    // Filtrar y eliminar imágenes antiguas
+    imagesNames = imagesNames.filter(image => {
+        const imageAge = currentTime - new Date(image.timestamp).getTime();
 
-        // Si la imagen tiene más de una hora, elimínala del directorio
-        if (imageAge > oneHourInMilliseconds) {
-            const imagePath = path.join(__dirname, 'images', 'graphs', image.imageName);
+        // Si la imagen tiene más de 1 hora de antigüedad (3600000 ms), eliminarla
+        if (imageAge > 3600000) {
+            const imagePath = path.join(new URL('.', import.meta.url).pathname, 'graph-images', `${image.imageName}.png`);
 
+            // Borrar el archivo
             fs.unlink(imagePath, (err) => {
                 if (err) {
-                    console.error(`Error al borrar la imagen ${image.imageName}:`, err.message);
+                    console.error(`Error al borrar el archivo ${image.imageName}.png:`, err);
                 } else {
-                    console.log(`Imagen eliminada: ${image.imageName}`);
-                    // Eliminar el registro del array
-                    imagesNames.splice(index, 1);
+                    console.log(`Archivo ${image.imageName}.png eliminado correctamente.`);
                 }
             });
+
+            // Retornar false para eliminar el objeto del array
+            return false;
         }
+
+        // Retornar true para mantener el objeto en el array
+        return true;
     });
-}
-// Ejecutar la comprobación cada 5 minutos
-setInterval(removeOldImages, 5 * 60 * 1000);
+}, 5 * 60 * 1000); // Ejecutar cada 5 minutos
 
 app.post('/flag-action', async (req, res) => {
     const { action, payload, flagTeam } = req.body;
