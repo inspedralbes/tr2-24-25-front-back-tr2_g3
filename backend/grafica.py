@@ -42,6 +42,9 @@ try:
         for entry in data
     ]
 
+    plt.style.use('fivethirtyeight')
+    plt.grid(True)
+
     plt.figure(figsize=(10, 6))
 
     plt.plot(dates, addition_percentage, label="Suma", marker='o')
@@ -49,15 +52,30 @@ try:
     plt.plot(dates, multiplication_percentage, label="Multiplicació", marker='o')
     plt.plot(dates, division_percentage, label="Divisio", marker='x')
 
-    plt.xlabel('Data')
-    plt.ylabel('Percentatge de Respostes Correctes')
-    plt.title('Percentatge de respostes Correctes per operació')
-    plt.xticks(rotation=45)
-    plt.legend()
+    # Hacer los textos más pequeños
+    plt.xlabel('Data', fontsize=16)  # Ajustar el tamaño de la etiqueta del eje X
+    plt.ylabel('Percentatge de Respostes Correctes', fontsize=16)  # Ajustar el tamaño de la etiqueta del eje Y
+    plt.title('Percentatge de respostes Correctes per operació', fontsize=20)  # Ajustar el tamaño del título
+
+    # Ajustar los límites del eje X para que comience desde la primera fecha
+    plt.xlim(dates[0], dates[-1])
+
+    # Ajustar los límites del eje Y para que siempre llegue hasta 100
+    plt.ylim(0, 100)
+
+    # Configurar las fechas para que se muestren horizontalmente
+    plt.xticks(rotation=70, fontsize=8)  # Ajustar el tamaño de las etiquetas del eje X
+
+    # Reducir el tamaño del texto de la leyenda
+    plt.legend(fontsize=8)
+
     plt.tight_layout()
 
     plt.savefig(image_path)
     print(f"Gráfico guardado como {image_path}")
+
+
+
 except Exception as e:
     print(f"Error: {e}")
     sys.exit(1)

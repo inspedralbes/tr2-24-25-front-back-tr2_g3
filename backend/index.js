@@ -8,7 +8,6 @@ import jwt from 'jsonwebtoken'; // secret-key
 import communicationManager from './communicationManager.js';
 import { MongoClient } from 'mongodb';
 import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
-import { exec } from 'child_process';
 import { spawn } from 'child_process';
 import fs from 'fs';
 import path from 'path';
@@ -46,12 +45,6 @@ io.on('connection', (socket) => {
         console.log(`Usuario desconectado: ${socket.id}`);
     });
 
-    socket.on('bandera-verde-obtenida', (userName) => {
-        io.emit('bandera-verde-obtenida', userName);
-    });
-    socket.on('bandera-roja-obtenida', (userName) => {
-        io.emit('bandera-roja-obtenida', userName);
-    });
 });
 
 const mongoUri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -156,6 +149,14 @@ app.get('/getStats', async (req, res) => {
 
         // Convertir el resultado a un array
         const total_data = Object.values(groupedData);
+
+        // sort by day/month/year ascending
+        total_data.sort((a, b) => {
+            const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
+            const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
+            return dateA - dateB;
+        });
+
         res.json(total_data); // Enviar la respuesta como JSON
     } catch (error) {
         console.error("Error al obtener estadísticas:", error);
@@ -196,6 +197,13 @@ app.get('/createStats', async (req, res) => {
         }, {});
 
         const total_data = Object.values(groupedData);
+
+        // sort by day/month/year ascending
+        total_data.sort((a, b) => {
+            const dateA = new Date(a.date.year, a.date.month - 1, a.date.day);
+            const dateB = new Date(b.date.year, b.date.month - 1, b.date.day);
+            return dateA - dateB;
+        });
 
         // generate a random name for the image
         const imageName = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -253,11 +261,85 @@ setInterval(removeOldImages, 5 * 60 * 1000);
 app.get('/flag-action', async (req, res) => {
     const { action, payload, flagTeam } = req.body;
 
-    const teamColor = flagTeam === 'Red' ? 'red' : 'green';
-    const eventType = action === 'pickup' ? 'taken' : 'returned';
+    const teamColor = flagTeam.toLowerCase() === 'red' ? 'red' : 'green';
+    const eventType = action.toLowerCase() === 'pickup' ? 'taken' : 'returned';
 
     io.emit(`flag-${teamColor}-${eventType}`, payload);
 });
+
+app.post('/question-result', async (req, res) => {
+    const { userId, questionType, team, isCorrect } = req.body;
+
+    const teamColor = team.toLowerCase() === 'red' ? 'red' : 'green';
+
+    io.emit(`correct-answer-${teamColor}`);
+
+    try {
+        const client = await getClientDB();
+        const database = client.db(process.env.MONGO_DB);
+        const collection = database.collection('user_statistics');
+
+        const today = new Date();
+        const date = {
+            year: today.getFullYear(),
+            month: today.getMonth() + 1, // Los meses son 0-indexados en JavaScript
+            day: today.getDate(),
+        };
+
+        // Buscar si ya existe un documento para el usuario en la fecha de hoy
+        const existingDoc = await collection.findOne({
+            user_id: userId,
+            'date.year': date.year,
+            'date.month': date.month,
+            'date.day': date.day,
+        });
+
+        const operation = {
+            addition: { total_attempts: 0, correct_answers: 0 },
+            subtraction: { total_attempts: 0, correct_answers: 0 },
+            multiplication: { total_attempts: 0, correct_answers: 0 },
+            division: { total_attempts: 0, correct_answers: 0 },
+        };
+
+        // Si ya existe un documento para hoy, actualizarlo
+        if (existingDoc) {
+            const operationSummary = existingDoc.operation_summary;
+
+            // Incrementar los intentos y las respuestas correctas según el tipo de operación y si fue correcta
+            operationSummary[questionType].total_attempts += 1;
+            if (isCorrect) {
+                operationSummary[questionType].correct_answers += 1;
+            }
+
+            await collection.updateOne(
+                { _id: existingDoc._id },
+                { $set: { operation_summary: operationSummary } }
+            );
+            res.status(200).json({ message: 'Respuesta guardada con éxito' });
+
+        } else {
+            // Si no existe un documento para hoy, crearlo
+            operation[questionType].total_attempts = 1;
+            if (isCorrect) {
+                operation[questionType].correct_answers = 1;
+            }
+
+            await collection.insertOne({
+                user_id: userId,
+                date: date,
+                operation_summary: operation,
+                type: 'user',
+            });
+
+            res.status(200).json({ message: 'Respuesta guardada con éxito' });
+        }
+
+    } catch (error) {
+        console.error("Error al guardar la respuesta:", error);
+        res.status(500).json({ error: "Error al guardar la respuesta" });
+    }
+});
+
 
 // Rutas básicas
 app.get('/', (req, res) => {
