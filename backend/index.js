@@ -10,6 +10,8 @@ import { MongoClient } from 'mongodb';
 import getRandomQuestion from './generateQuestionFunctions.js'; // getRandomQuestion()
 import { exec } from 'child_process';
 import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config(); // Carga las variables de entorno de .env
 
@@ -206,6 +208,8 @@ app.get('/getStats', async (req, res) => {
     }
 });
 
+const imagesNames = [];
+
 app.get('/createStats', async (req, res) => {
     const { year, month, day, user_id, lastWeek } = req.body;
 
@@ -238,7 +242,8 @@ app.get('/createStats', async (req, res) => {
 
         const total_data = Object.values(groupedData);
 
-        const imageName = 'grafica_personalizada.png';
+        // generate a random name for the image
+        const imageName = Math.random().toString(36).substring(2, 8).toUpperCase();
         const pythonProcess = spawn('py', ['grafica.py', JSON.stringify(total_data), imageName]);
 
         pythonProcess.stdout.on('data', (data) => {
@@ -251,7 +256,9 @@ app.get('/createStats', async (req, res) => {
 
         pythonProcess.on('close', (code) => {
             if (code === 0) {
-                res.json({ success: true, message: 'Gráfico generado correctamente.', imageName });
+                res.json({ success: true, message: 'Gráfico generado correctamente.', imageName, total_data });
+                // save the image name with timestamp
+                imagesNames.push({ imageName, timestamp: new Date() });
             } else {
                 res.status(500).json({ error: `El script Python terminó con código ${code}` });
             }
@@ -261,6 +268,33 @@ app.get('/createStats', async (req, res) => {
         res.status(500).json({ error: "Error al obtener estadísticas" });
     }
 });
+
+
+function removeOldImages() {
+    const currentTime = new Date();
+    const oneHourInMilliseconds = 60 * 60 * 1000;
+
+    imagesNames.forEach((image, index) => {
+        const imageAge = currentTime - new Date(image.timestamp);
+
+        // Si la imagen tiene más de una hora, elimínala del directorio
+        if (imageAge > oneHourInMilliseconds) {
+            const imagePath = path.join(__dirname, 'images', 'graphs', image.imageName);
+
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error(`Error al borrar la imagen ${image.imageName}:`, err.message);
+                } else {
+                    console.log(`Imagen eliminada: ${image.imageName}`);
+                    // Eliminar el registro del array
+                    imagesNames.splice(index, 1);
+                }
+            });
+        }
+    });
+}
+// Ejecutar la comprobación cada 5 minutos
+setInterval(removeOldImages, 5 * 60 * 1000);
 
 
 // Rutas básicas
