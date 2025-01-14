@@ -270,6 +270,8 @@ app.post('/flag-action', async (req, res) => {
     const eventType = action.toLowerCase() === 'pickup' ? 'taken' : 'returned';
 
     io.emit(`flag-${teamColor}-${eventType}`, payload);
+
+    res.status(200).json({ message: 'Acción de bandera realizada con éxito' });
 });
 
 app.post('/question-result', async (req, res) => {
