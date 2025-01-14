@@ -134,6 +134,9 @@ async function getPermissionById(id) {
 const communicationManager = {
   getUsers,
   getUserById,
+  changeEmail,
+  changeUsername,
+  changePassword,
   findUserByMail,
   registerUser,
   updateUser,
