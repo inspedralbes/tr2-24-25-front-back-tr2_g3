@@ -263,7 +263,7 @@ function removeOldImages() {
 // Ejecutar la comprobación cada 5 minutos
 setInterval(removeOldImages, 5 * 60 * 1000);
 
-app.get('/flag-action', async (req, res) => {
+app.post('/flag-action', async (req, res) => {
     const { action, payload, flagTeam } = req.body;
 
     const teamColor = flagTeam.toLowerCase() === 'red' ? 'red' : 'green';
