@@ -253,10 +253,10 @@ setInterval(removeOldImages, 5 * 60 * 1000);
 app.get('/flag-action', async (req, res) => {
     const { action, payload, flagTeam } = req.body;
 
-    const teamColor = flagTeam === 'Red' ? 'roja' : 'verde';
-    const eventType = action === 'pickup' ? 'obtenida' : 'devuelta';
+    const teamColor = flagTeam === 'Red' ? 'red' : 'green';
+    const eventType = action === 'pickup' ? 'taken' : 'returned';
 
-    io.emit(`bandera-${teamColor}-${eventType}`, payload);
+    io.emit(`flag-${teamColor}-${eventType}`, payload);
 });
 
 // Rutas básicas
