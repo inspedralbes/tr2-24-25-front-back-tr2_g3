@@ -31,6 +31,29 @@ const io = new Server(server, {
 app.use(cors()); // Habilita CORS
 app.use(express.json()); // Permite recibir y trabajar con JSON
 
+// Socket.IO
+io.on('connection', (socket) => {
+    console.log(`Usuario conectado: ${socket.id}`);
+
+    // Escuchar eventos
+    socket.on('mensaje', (data) => {
+        console.log(`Mensaje recibido: ${data}`);
+        // Enviar una respuesta a todos los clientes conectados
+        io.emit('respuesta', `Servidor recibió: ${data}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`Usuario desconectado: ${socket.id}`);
+    });
+
+    socket.on('bandera-verde-obtenida', (userName) => {
+        io.emit('bandera-verde-obtenida', userName);
+    });
+    socket.on('bandera-roja-obtenida', (userName) => {
+        io.emit('bandera-roja-obtenida', userName);
+    });
+});
+
 const mongoUri = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_CLUSTER}/?retryWrites=true&w=majority&appName=Cluster0`;
 
 const client = new MongoClient(mongoUri);
@@ -201,7 +224,6 @@ app.get('/createStats', async (req, res) => {
     }
 });
 
-
 function removeOldImages() {
     const currentTime = new Date();
     const oneHourInMilliseconds = 60 * 60 * 1000;
@@ -228,10 +250,13 @@ function removeOldImages() {
 // Ejecutar la comprobación cada 5 minutos
 setInterval(removeOldImages, 5 * 60 * 1000);
 
+app.get('/flag-action', async (req, res) => {
+    const { action, payload, flagTeam } = req.body;
 
-// Rutas básicas
-app.get('/', (req, res) => {
-    res.json({ message: 'Servidor funcionando correctamente' });
+    const teamColor = flagTeam === 'Red' ? 'roja' : 'verde';
+    const eventType = action === 'pickup' ? 'obtenida' : 'devuelta';
+
+    io.emit(`bandera-${teamColor}-${eventType}`, payload);
 });
 
 // Rutas básicas
@@ -267,29 +292,6 @@ const verifyTokenStudent = verifyToken([process.env.JWT_SECRET_ADMIN, process.en
 // Ruta protegida de ejemplo
 app.get('/protected', verifyToken, (req, res) => {
     res.json({ message: `Bienvenido, ${JSON.stringify(req.body)}` });
-});
-
-// Socket.IO
-io.on('connection', (socket) => {
-    console.log(`Usuario conectado: ${socket.id}`);
-
-    // Escuchar eventos
-    socket.on('mensaje', (data) => {
-        console.log(`Mensaje recibido: ${data}`);
-        // Enviar una respuesta a todos los clientes conectados
-        io.emit('respuesta', `Servidor recibió: ${data}`);
-    });
-
-    socket.on('disconnect', () => {
-        console.log(`Usuario desconectado: ${socket.id}`);
-    });
-
-    socket.on('bandera-verde-obtenida', (userName) => {
-        io.emit('bandera-verde-obtenida', userName);
-    });
-    socket.on('bandera-roja-obtenida', (userName) => {
-        io.emit('bandera-roja-obtenida', userName);
-    });
 });
 
 // Login de usuarios
