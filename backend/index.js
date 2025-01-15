@@ -308,8 +308,13 @@ app.post('/question-result', async (req, res) => {
                 operation[questionType].correct_answers = 1;
             }
 
+            // check if userId is an integer
+            if (userId === null) {
+                userId = 0;
+            }
+
             await collection.insertOne({
-                user_id: userId,
+                user_id: parseInt(userId, 10),
                 date: date,
                 operation_summary: operation,
                 type: 'user',
