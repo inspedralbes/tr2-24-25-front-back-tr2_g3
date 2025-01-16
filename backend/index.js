@@ -254,6 +254,13 @@ app.post('/flag-action', async (req, res) => {
 app.post('/question-result', async (req, res) => {
     const { userId, questionType, team, isCorrect } = req.body;
 
+    // check if userId is null
+    if (userId === null) {
+        userId = 0;
+    }
+
+    const searchedId = parseInt(userId, 10);
+
     const teamColor = team.toLowerCase() === 'red' ? 'red' : 'green';
 
     io.emit(`correct-answer-${teamColor}`);
@@ -272,7 +279,7 @@ app.post('/question-result', async (req, res) => {
 
         // Buscar si ya existe un documento para el usuario en la fecha de hoy
         const existingDoc = await collection.findOne({
-            user_id: userId,
+            user_id: searchedId,
             'date.year': date.year,
             'date.month': date.month,
             'date.day': date.day,
@@ -309,10 +316,10 @@ app.post('/question-result', async (req, res) => {
             }
 
             await collection.insertOne({
-                user_id: userId,
                 date: date,
                 operation_summary: operation,
                 type: 'user',
+                user_id: searchedId
             });
 
             res.status(200).json({ message: 'Respuesta guardada con éxito' });
