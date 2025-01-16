@@ -324,7 +324,7 @@ onUnmounted(() => {
 
 .chart-container {
   width: 100%; /* Asegúrate de que ocupe el ancho disponible */
-  height: 400px; /* Define una altura fija o adaptable */
+  height: 300px; /* Define una altura fija o adaptable */
   position: relative; /* Necesario para Chart.js */
 }
 
