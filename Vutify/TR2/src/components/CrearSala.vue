@@ -181,7 +181,7 @@ const createChart = () => {
     type: 'bar',
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
       animation: {
         duration: 800,
         easing: 'easeOutBounce',
@@ -323,7 +323,9 @@ onUnmounted(() => {
 }
 
 .chart-container {
-  width: 40%;
+  width: 100%; /* Asegúrate de que ocupe el ancho disponible */
+  height: 400px; /* Define una altura fija o adaptable */
+  position: relative; /* Necesario para Chart.js */
 }
 
 #killsChart {

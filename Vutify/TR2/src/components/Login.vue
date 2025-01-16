@@ -267,4 +267,5 @@ const forgotPassword = () => {
     font-size: 16px;
   }
 }
+
 </style>
